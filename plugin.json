@@ -7,9 +7,9 @@
   "author": "Blue Nautilus",
   "authorEmail": "abluenautilus@gmail.com",
   "authorUrl": "https://github.com/abluenautilus",
-  "pluginUrl": "",
-  "manualUrl": "",
-  "sourceUrl": "",
+  "pluginUrl": "https://github.com/abluenautilus/SeasideModularVCV",
+  "manualUrl": "https://github.com/abluenautilus/SeasideModularVCV/blob/master/README.md",
+  "sourceUrl": "https://github.com/abluenautilus/SeasideModularVCV",
   "donateUrl": "",
   "changelogUrl": "",
   "modules": [

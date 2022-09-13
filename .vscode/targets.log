@@ -10,13 +10,11 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 make: -dumpmachine: Command not found
 
 make: -dumpmachine: Command not found
-
 make: -dumpmachine: Command not found
-
 ../../arch.mk:10: *** Could not determine CPU architecture of . Try hacking around in arch.mk.  Stop.
 
 
-# Make data base, printed on Tue Sep 13 01:13:58 2022
+# Make data base, printed on Tue Sep 13 01:27:00 2022
 
 # Variables
 
@@ -33,7 +31,6 @@ FSLREMOTECALL =
 # automatic
 @F = $(notdir $@)
 # makefile (from `../../plugin.mk', line 5)
- 
 SLUG := SeasideModular
 # makefile
 CURDIR := /Users/jonask/Music/VCVRack/Rack/plugins/Seaside
@@ -192,7 +189,7 @@ CLICOLOR = 1
 # environment
 CONDA_PREFIX = /Users/jonask/opt/anaconda3
 # environment
-VSCODE_PID = 18767
+VSCODE_PID = 20700
 # environment
 _CE_CONDA = 
 # environment
@@ -206,9 +203,9 @@ LANG = C
 
 # Directories
 
-# . (device 16777222, inode 153048404): 14 files, no impossibilities.
+# . (device 16777222, inode 153048404): 16 files, no impossibilities.
 
-# 14 files, no impossibilities in 1 directories.
+# 16 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -266,6 +263,6 @@ Makefile:
 # strcache size: total = 4096 / max = 4096 / min = 4096 / avg = 4096
 # strcache free: total = 4057 / max = 4057 / min = 4057 / avg = 4057
 
-# Finished Make data base on Tue Sep 13 01:13:58 2022
+# Finished Make data base on Tue Sep 13 01:27:00 2022
 
  
