@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "name":"VCV Rack",
+            "request":"launch",
+            "cwd": "/Users/jonask/Music/VCVRack/Rack",
+            "program":"/Users/jonask/Music/VCVRack/Rack/Rack",
+            "args":["-d"],
+            "stopAtEntry": true
+        }
+
+        
+    ]
+}
