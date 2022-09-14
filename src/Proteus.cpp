@@ -35,7 +35,6 @@ struct Proteus : Module {
 		CV7_INPUT,
 		CV8_INPUT,
 		AUDIOIN1_INPUT,
-		AUDIOIN2_INPUT,
 		INPUTS_LEN
 	};
 	enum OutputId {
@@ -160,22 +159,22 @@ struct Proteus : Module {
 	Proteus() {
 		config(PARAMS_LEN, INPUTS_LEN, OUTPUTS_LEN, LIGHTS_LEN);
 
-		configParam(POT1_PARAM, 0.0f, 32.0f, 16.0f, "Sequence length"," beats");
+		configParam(POT1_PARAM, 1.0f, 32.0f, 16.0f, "Sequence length"," beats");
 		paramQuantities[POT1_PARAM]->snapEnabled = true;
-		configParam(POT5_PARAM, 0.f, 100.0f, 80.0f, "Density","%");
-		paramQuantities[POT5_PARAM]->snapEnabled = true;
-		configParam(POT3_PARAM, 1.f, 50.f, 20.f, "Lambda");
-		paramQuantities[POT3_PARAM]->snapEnabled = true;
 		configParam<scaleKnob>(POT2_PARAM, 1.f, 6.f, 1.f, "Scale");
 		paramQuantities[POT2_PARAM]->snapEnabled = true;
-		configParam(POT6_PARAM, 0.f, 100.f, 20.f, "Octave change prob","%");
-		paramQuantities[POT6_PARAM]->snapEnabled = true;
+		configParam(POT3_PARAM, 1.f, 50.f, 20.f, "Lambda");
+		paramQuantities[POT3_PARAM]->snapEnabled = true;
 		configParam(POT4_PARAM, 0.05f, 1.f, 0.5f, "Gate length");
+		configParam(POT5_PARAM, 0.5f, 100.0f, 80.0f, "Density","%");
+		paramQuantities[POT5_PARAM]->snapEnabled = true;
+		configParam(POT6_PARAM, 0.0f, 100.f, 20.f, "Octave change prob","%");
+		paramQuantities[POT6_PARAM]->snapEnabled = true;
 		configParam(POT7_PARAM, 0.f, 100.f, 20.f, "Note change prob","%");
 		paramQuantities[POT7_PARAM]->snapEnabled = true;
 		configParam(BUTTON1_PARAM, 0.f, 1.f, 0.f, "New pattern");
 		configParam(SWITCH1_PARAM, 0.f, 2.f, 0.f, "Mode");
-		configParam(SWITCH2_PARAM, 0.f, 2.f, 0.f, "Octave");
+		configParam(SWITCH2_PARAM, 0.f, 2.f, 1.f, "Octave");
 		configInput(CV1_INPUT, "Seq Length CV");
 		configInput(CV2_INPUT, "Scale CV");
 		configInput(CV3_INPUT, "Lambda CV");
@@ -191,7 +190,6 @@ struct Proteus : Module {
 
 		newMelody();
 	}
-
 
 
 	void process(const ProcessArgs& args) override {
@@ -469,7 +467,7 @@ struct Proteus : Module {
 		//Generate a new melody from scratch
 
 		//Flash lights
-		for (int i = 1; i <= LIGHTS_LEN; i+=3) {
+		for (int i = 0; i < LIGHTS_LEN; i+=3) {
 			lights[i].setBrightness(1); //R
 			lights[i+1].setBrightness(1); //G
 			lights[i+2].setBrightness(1); //B
@@ -511,11 +509,9 @@ struct Proteus : Module {
 					sequence[x] = prevNote;
 
 				} else if (noteKind == NM_DOWN) {
-
 					//find tone of previous note in the scale, find index of toneNum in validTones
 					std::vector<int>::iterator it = std::find(validTones.begin(),validTones.end(),prevNote.toneNum);
 					int toneIndex = std::distance(validTones.begin(), it);
-
 					toneIndex--;
 					int newOctave = prevNote.octave;
 					if (toneIndex < 0) {
@@ -530,11 +526,9 @@ struct Proteus : Module {
 					sequence[x] = aNewNote;
 
 				} else if (noteKind == NM_UP) {
-
 					//find tone of previous note in the scale, find index of toneNum in validTones
 					std::vector<int>::iterator it = std::find(validTones.begin(),validTones.end(),prevNote.toneNum);
 					int toneIndex = std::distance(validTones.begin(), it);
-
 					toneIndex++;
 					int newOctave = prevNote.octave;
 					if (toneIndex >= int(validTones.size())) {
@@ -596,20 +590,20 @@ struct ProteusWidget : ModuleWidget {
 		addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
 		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(7.325, 18.528)), module, Proteus::POT1_PARAM));
-		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(43.951, 18.717)), module, Proteus::POT5_PARAM));
-		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(25.848, 28.726)), module, Proteus::POT3_PARAM));
 		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(7.325, 39.499)), module, Proteus::POT2_PARAM));
-		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(43.951, 39.642)), module, Proteus::POT6_PARAM));
+		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(25.848, 28.726)), module, Proteus::POT3_PARAM));
 		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(25.848, 49.409)), module, Proteus::POT4_PARAM));
+		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(43.951, 18.717)), module, Proteus::POT5_PARAM));
+		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(43.951, 39.642)), module, Proteus::POT6_PARAM));	
 		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(43.951, 60.605)), module, Proteus::POT7_PARAM));
 
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(5.511, 83.737)), module, Proteus::CV1_INPUT));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(18.612, 83.737)), module, Proteus::CV3_INPUT));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(31.743, 83.737)), module, Proteus::CV5_INPUT));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(44.911, 83.737)), module, Proteus::CV7_INPUT));
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(5.511, 97.813)), module, Proteus::CV2_INPUT));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(18.612, 83.737)), module, Proteus::CV3_INPUT));
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(18.612, 97.813)), module, Proteus::CV4_INPUT));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(31.743, 83.737)), module, Proteus::CV5_INPUT));
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(31.743, 97.813)), module, Proteus::CV6_INPUT));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(44.911, 83.737)), module, Proteus::CV7_INPUT));
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(44.911, 97.813)), module, Proteus::CV8_INPUT));
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(5.511, 111.889)), module, Proteus::AUDIOIN1_INPUT));
 		//addInput(createInputCentered<PJ301MPort>(mm2px(Vec(18.612, 111.889)), module, Proteus::AUDIOIN2_INPUT));

@@ -8,7 +8,7 @@
             "cwd": "/Users/jonask/Music/VCVRack/Rack",
             "program":"/Users/jonask/Music/VCVRack/Rack/Rack",
             "args":["-d"],
-            "stopAtEntry": true
+            "stopAtEntry": false
         }
 
         
