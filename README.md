@@ -26,7 +26,7 @@ Mixolydian
 
 ***Density*** - This controls the density of the melodies. As you turn this knob towards 100, the probability of rest notes decreases to 0 and all the steps will be filled with notes. 
 
-***Octave** - Controls octave transposition probability. 
+**Octave** - Controls octave transposition probability. 
 
 ***Mutate*** - Controls the probability of random note mutations. 
 
