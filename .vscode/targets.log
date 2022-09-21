@@ -10,11 +10,13 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 make: -dumpmachine: Command not found
 
 make: -dumpmachine: Command not found
-make: -dumpmachine: Command not found
+
+make: 
+-dumpmachine: Command not found
 ../../arch.mk:10: *** Could not determine CPU architecture of . Try hacking around in arch.mk.  Stop.
 
 
-# Make data base, printed on Tue Sep 13 01:27:00 2022
+# Make data base, printed on Tue Sep 20 23:59:30 2022
 
 # Variables
 
@@ -51,7 +53,7 @@ SOURCES = $(wildcard src/*.cpp) $(wildcard inc/*.cpp)
 # makefile (from `Makefile', line 7)
 CXXFLAGS = 
 # makefile (from `../../plugin.mk', line 6)
-VERSION := 2.0.1
+VERSION := 2.0.2
 # environment
 __CFBundleIdentifier = com.microsoft.VSCode
 # environment
@@ -73,11 +75,11 @@ LDFLAGS =  -shared -L$(RACK_DIR) -lRack
 # default
 .FEATURES := target-specific order-only second-expansion else-if archives jobserver check-symlink
 # environment
-SSH_AUTH_SOCK = /private/tmp/com.apple.launchd.kmNNf65OAY/Listeners
+SSH_AUTH_SOCK = /private/tmp/com.apple.launchd.RwcgO0lB8G/Listeners
 # automatic
 %F = $(notdir $%)
 # environment
-DISPLAY = /private/tmp/com.apple.launchd.pkinpDxib7/org.xquartz:0
+DISPLAY = /private/tmp/com.apple.launchd.inOE680k2m/org.xquartz:0
 # environment
 CONDA_EXE = /Users/jonask/opt/anaconda3/bin/conda
 # environment
@@ -93,7 +95,7 @@ HOME = /Users/jonask
 # default
 MAKEFILEPATH = $(shell /usr/bin/xcode-select -print-path 2>/dev/null || echo /Developer)/Makefiles
 # environment
-VSCODE_CODE_CACHE_PATH = /Users/jonask/Library/Application Support/Code/CachedData/784b0177c56c607789f9638da7b6bf3230d47a8c
+VSCODE_CODE_CACHE_PATH = /Users/jonask/Library/Application Support/Code/CachedData/74b1f979648cc44d385a2286793c226e611f59e7
 # environment
 LOGNAME = jonask
 # environment
@@ -137,7 +139,7 @@ TMPDIR = /var/folders/0q/sbsy1b4j0g95g3j3ztxp7pdw0000gn/T/
 # automatic
 *F = $(notdir $*)
 # environment
-VSCODE_IPC_HOOK = /Users/jonask/Library/Application Support/Code/1.71.0-main.sock
+VSCODE_IPC_HOOK = /Users/jonask/Library/Application Support/Code/1.71.2-main.sock
 # environment
 FSLLOCKDIR = 
 # environment
@@ -149,7 +151,7 @@ MFLAGS = -Rrqp
 # automatic
 *D = $(patsubst %/,%,$(dir $*))
 # environment
-XPC_SERVICE_NAME = application.com.microsoft.VSCode.149978672.149978678
+XPC_SERVICE_NAME = application.com.microsoft.VSCode.154585494.154585500
 # automatic
 +D = $(patsubst %/,%,$(dir $+))
 # automatic
@@ -189,7 +191,7 @@ CLICOLOR = 1
 # environment
 CONDA_PREFIX = /Users/jonask/opt/anaconda3
 # environment
-VSCODE_PID = 20700
+VSCODE_PID = 82821
 # environment
 _CE_CONDA = 
 # environment
@@ -203,9 +205,9 @@ LANG = C
 
 # Directories
 
-# . (device 16777222, inode 153048404): 16 files, no impossibilities.
+# . (device 16777225, inode 153048404): 18 files, no impossibilities.
 
-# 16 files, no impossibilities in 1 directories.
+# 18 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -253,6 +255,7 @@ Makefile:
 # files hash-table stats:
 # Load=6/1024=1%, Rehash=0, Collisions=0/9=0%
 # VPATH Search Paths
+ 
 
 # No `vpath' search paths.
 
@@ -263,6 +266,6 @@ Makefile:
 # strcache size: total = 4096 / max = 4096 / min = 4096 / avg = 4096
 # strcache free: total = 4057 / max = 4057 / min = 4057 / avg = 4057
 
-# Finished Make data base on Tue Sep 13 01:27:00 2022
+# Finished Make data base on Tue Sep 20 23:59:30 2022
 
  

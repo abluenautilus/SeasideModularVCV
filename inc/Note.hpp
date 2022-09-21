@@ -108,6 +108,9 @@ class Note {
                 voltage = 0;
             }
         }
-
+        
+        void setNoteNumMIDI() {
+            noteNumMIDI = 12*(octave+1)+(toneNum-1);
+        }
 
 };

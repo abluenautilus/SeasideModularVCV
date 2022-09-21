@@ -34,7 +34,8 @@ struct Proteus : Module {
 		CV6_INPUT,
 		CV7_INPUT,
 		CV8_INPUT,
-		AUDIOIN1_INPUT,
+		CLOCK_INPUT,
+		RESET_INPUT,
 		INPUTS_LEN
 	};
 	enum OutputId {
@@ -87,6 +88,12 @@ struct Proteus : Module {
 	bool prevTriggerStateNewMelody = false;
 	float triggerValueNewMelody;
 
+	//Reset trigger
+	dsp::SchmittTrigger strigReset;
+	bool triggerStateReset = false;
+	bool prevTriggerStateReset = false;
+	float triggerValueReset;
+
 	//boolean options
 	bool regen = true;
 	bool mutate = true;
@@ -128,7 +135,6 @@ struct Proteus : Module {
 	float gateDuration = .05f;
 	uint8_t activeLED = 0;
 	float LEDbrightness = 0;
-	bool downOnly, upOnly, upDown;
 	double trigToTrigTime = 0;
 	double prevTrigTime = 0;
 	double prevFrame = 0;
@@ -161,7 +167,7 @@ struct Proteus : Module {
 
 		configParam(POT1_PARAM, 1.0f, 32.0f, 16.0f, "Sequence length"," beats");
 		paramQuantities[POT1_PARAM]->snapEnabled = true;
-		configParam<scaleKnob>(POT2_PARAM, 1.f, 6.f, 1.f, "Scale");
+		configParam<scaleKnob>(POT2_PARAM, 1.f, 7.f, 1.f, "Scale");
 		paramQuantities[POT2_PARAM]->snapEnabled = true;
 		configParam(POT3_PARAM, 1.f, 50.f, 20.f, "Lambda");
 		paramQuantities[POT3_PARAM]->snapEnabled = true;
@@ -172,9 +178,9 @@ struct Proteus : Module {
 		paramQuantities[POT6_PARAM]->snapEnabled = true;
 		configParam(POT7_PARAM, 0.f, 100.f, 20.f, "Note change prob","%");
 		paramQuantities[POT7_PARAM]->snapEnabled = true;
-		configParam(BUTTON1_PARAM, 0.f, 1.f, 0.f, "New pattern");
+		configParam(BUTTON1_PARAM, 0.f, 1.f, 0.f, "New sequence");
 		configParam(SWITCH1_PARAM, 0.f, 2.f, 0.f, "Mode");
-		configParam(SWITCH2_PARAM, 0.f, 2.f, 1.f, "Octave");
+		configParam(SWITCH2_PARAM, 0.f, 2.f, 1.f, "Octave Range");
 		configInput(CV1_INPUT, "Seq Length CV");
 		configInput(CV2_INPUT, "Scale CV");
 		configInput(CV3_INPUT, "Lambda CV");
@@ -182,8 +188,9 @@ struct Proteus : Module {
 		configInput(CV5_INPUT, "Density CV");
 		configInput(CV6_INPUT, "Octave CV");
 		configInput(CV7_INPUT, "Mutate CV");
-		configInput(CV8_INPUT, "New Melody Gate");
-		configInput(AUDIOIN1_INPUT, "Clock In");
+		configInput(CV8_INPUT, "New Sequence Gate");
+		configInput(CLOCK_INPUT, "Clock In");
+		configInput(RESET_INPUT, "Reset");
 
 		configOutput(AUDIOOUT1_OUTPUT, "CV 1V/OCT");
 		configOutput(AUDIOOUT2_OUTPUT, "Gate");
@@ -191,14 +198,75 @@ struct Proteus : Module {
 		newMelody();
 	}
 
+	json_t *dataToJson() override {
+		json_t *root = json_object();
+
+		json_object_set_new(root, "moduleVersion", json_integer(2));
+		
+		json_t *seq = json_array();
+
+		for (int i = 0; i < 32; i++) {
+			json_array_insert_new(seq, i, json_integer(sequence[i].noteNumMIDI));
+		}
+
+		json_object_set_new(root, "sequence", seq);
+		json_object_set_new(root, "octaveOffset", json_integer(octaveOffset));
+		json_object_set_new(root, "repetitionCount", json_integer(repetitionCount));
+
+
+		// json_object_set_new(root, "hold", json_boolean(hold));
+		// json_object_set_new(root, "gate", json_boolean(gate));
+		// json_object_set_new(root, "nc", json_integer(noteCount));
+		// json_object_set_new(root, "pc", json_integer(patternCount));
+		// json_object_set_new(root, "polyOutputs", json_boolean(polyOutputs));	
+		// json_object_set_new(root, "pattern", pat);
+		// json_object_set_new(root, "octave", oct);		
+		// json_object_set_new(root, "glide", gld);		
+		// json_object_set_new(root, "accent", acc);
+		// json_object_set_new(root, "cvList", cvl);
+			
+		return root;
+	}
+
+	void dataFromJson(json_t* root) override {
+
+		json_t *seq = json_object_get(root, "sequence");
+		
+		for (int i = 0; i < 32; i++) {
+			if (seq) {
+				json_t *x = json_array_get(seq, i);
+				if (x) {
+					int MIDInum = json_integer_value(x);
+					Note nextNote = Note(MIDInum);
+					sequence[i] = nextNote;
+				}
+			}
+		}
+
+		json_t *oo = json_object_get(root, "octaveOffset");
+		if(oo) {
+			octaveOffset = json_integer_value(oo);
+		}
+
+		json_t *rc = json_object_get(root, "repetitionCount");
+		if(rc) {
+			repetitionCount = json_integer_value(rc);
+		}
+
+	}	
 
 	void process(const ProcessArgs& args) override {
 
 		//Record incoming triggers
-		triggerValue = inputs[AUDIOIN1_INPUT].getVoltage();
+		triggerValue = inputs[CLOCK_INPUT].getVoltage();
 		strig.process(rescale(triggerValue, 0.1f, 2.0f, 0.f, 1.f));
 		prevTriggerState = triggerState;
 		triggerState = strig.isHigh();
+
+		triggerValueReset = inputs[RESET_INPUT].getVoltage();
+		strigReset.process(rescale(triggerValueReset, 0.1f, 2.0f, 0.f, 1.f));
+		prevTriggerStateReset = triggerStateReset;
+		triggerStateReset = strigReset.isHigh();
 
 		triggerValueNewMelody = inputs[CV8_INPUT].getVoltage();
 		strigNewMelody.process(rescale(triggerValueNewMelody, 0.1f, 2.0f, 0.f, 1.f));
@@ -259,17 +327,14 @@ struct Proteus : Module {
 		}
 
 		if (params[SWITCH2_PARAM].getValue()==0) {
-			downOnly = true;
-			upDown = false;
-			upOnly = false;
+			maxOctaveOffsetDown = 0;
+			maxOctaveOffsetUp = 0;
 		} else if (params[SWITCH2_PARAM].getValue()==1) {
-			upDown = true;
-			downOnly = false;
-			upOnly = false;
+			maxOctaveOffsetDown = 1;
+			maxOctaveOffsetUp = 1;
 		} else if (params[SWITCH2_PARAM].getValue()==2) {
-			upOnly = true;
-			downOnly = false;
-			upDown = false;
+			maxOctaveOffsetDown = 2;
+			maxOctaveOffsetUp = 2;
 		}
 
 		//process new melody incoming trigger
@@ -277,6 +342,12 @@ struct Proteus : Module {
 			newMelody();
 		}
 
+		//process reset trigger
+		if (!prevTriggerStateReset && triggerStateReset) {
+			currentNote = 0;
+		}
+
+		
 		//Check for incoming trigger and do the step when it comes in
 		if (!prevTriggerState && triggerState) {
 			
@@ -386,31 +457,23 @@ struct Proteus : Module {
 
 				int octaveChoice = std::rand() % 100;
 				if (octaveChoice < octaveChangeProbability) {
-					
-					if (downOnly) {
-						changeOctave(-1);
-					} else if (upOnly) {
-						changeOctave(1);
-					} else {
-						int coinFlip = std::rand() %100;
-						if (coinFlip < 50) {
-							if (octaveOffset <=  -1*maxOctaveOffsetDown) {
-								//We're already at the min octave so we bounce up
-								changeOctave(1);
-							} else {
-								changeOctave(-1);
-							}
+					int coinFlip = std::rand() %100;
+					if (coinFlip < 50) {
+						if (octaveOffset <=  -1*maxOctaveOffsetDown) {
+							//We're already at the min octave so we bounce up
+							changeOctave(1);
 						} else {
-							if (octaveOffset >= maxOctaveOffsetUp) {
-								//We're already at the max octave so we bounce down
-								changeOctave(-1);
-							} else {
-								changeOctave(1);
-							}
+							changeOctave(-1);
+						}
+					} else {
+						if (octaveOffset >= maxOctaveOffsetUp) {
+							//We're already at the max octave so we bounce down
+							changeOctave(-1);
+						} else {
+							changeOctave(1);
 						}
 					}
-
-
+					
 				} else {
 				}
 
@@ -440,6 +503,7 @@ struct Proteus : Module {
 			for (int t=0; t < maxSteps; ++t) {
 				sequence[t].octave += octaveChange;
 				sequence[t].setVoltage();
+				sequence[t].setNoteNumMIDI();
 
 			}
 			octaveOffset += octaveChange;
@@ -579,6 +643,8 @@ struct Proteus : Module {
 };
 
 
+
+
 struct ProteusWidget : ModuleWidget {
 	ProteusWidget(Proteus* module) {
 		setModule(module);
@@ -605,8 +671,8 @@ struct ProteusWidget : ModuleWidget {
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(31.743, 97.813)), module, Proteus::CV6_INPUT));
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(44.911, 83.737)), module, Proteus::CV7_INPUT));
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(44.911, 97.813)), module, Proteus::CV8_INPUT));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(5.511, 111.889)), module, Proteus::AUDIOIN1_INPUT));
-		//addInput(createInputCentered<PJ301MPort>(mm2px(Vec(18.612, 111.889)), module, Proteus::AUDIOIN2_INPUT));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(5.511, 111.889)), module, Proteus::CLOCK_INPUT));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(18.612, 111.889)), module, Proteus::RESET_INPUT));
 
 		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(31.743, 111.889)), module, Proteus::AUDIOOUT1_OUTPUT));
 		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(44.911, 111.889)), module, Proteus::AUDIOOUT2_OUTPUT));
