@@ -287,10 +287,10 @@ struct Proteus : Module {
 
 		//Process knob value changes
 		sequenceLength = clamp(int(params[POT1_PARAM].getValue()) + lengthAdjustment,1,maxSteps);
-		restProbability = clamp(100 - params[POT5_PARAM].getValue() - (10 * densityCV),1.0,100.0); 
+		restProbability = clamp(100 - params[POT5_PARAM].getValue() - (10 * densityCV),0.0,100.0); 
 		poisson_lambda = clamp(int(params[POT3_PARAM].getValue()) + (5 * int(lambdaCV)),1,50);
-		octaveChangeProbability = clamp(params[POT6_PARAM].getValue() + (10 * octaveCV),1.0,100.0);
-		noteChangeProbability = clamp(params[POT7_PARAM].getValue() + (10 * noteChangeCV),1.0,100.0);
+		octaveChangeProbability = clamp(params[POT6_PARAM].getValue() + (10 * octaveCV),0.0,100.0);
+		noteChangeProbability = clamp(params[POT7_PARAM].getValue() + (10 * noteChangeCV),0.0,100.0);
 		gateLengthKnobPosition = clamp(params[POT4_PARAM].getValue() + (gateLengthCV/10),0.1,1.0);
 
 		//Check if density changed for live updating
@@ -537,9 +537,16 @@ struct Proteus : Module {
 	void changeNotes(int amount) {
 		
 		//substitute notes in the melody with new notes
-
 		int noteToChange = std::rand() % sequenceLength;
 		Note newNote = getRandomNote();
+		//new notes should follow Density
+		int noteOnChoice = std::rand() % 100;
+		if (noteOnChoice < restProbability) {
+			newNote.muted = true;
+		} else {
+			newNote.muted = false;
+		}
+
 		sequence[noteToChange] = newNote;
 
 	}
