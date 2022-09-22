@@ -23,8 +23,9 @@ const std::map<int,std::string> scaleNames {
     {3,"Harmonic Minor"},
     {4,"Major Pentatonic"},
     {5,"Minor Pentatonic"},
-    {6,"Mixolydian"},
-    {7,"Chromatic"}
+    {6,"Dorian"},
+    {7,"Mixolydian"},
+    {8,"Chromatic"}
 };
 
 const std::map<std::string, std::vector<int>> scaleTones {   
@@ -34,6 +35,7 @@ const std::map<std::string, std::vector<int>> scaleTones {
     {"Harmonic Minor", std::vector<int>{1,3,4,6,8,9,12}},
     {"Major Pentatonic", std::vector<int>{1,3,5,8,10}},
     {"Minor Pentatonic", std::vector<int>{1,4,6,8,11}},
+    {"Dorian", std::vector<int>{1,3,4,6,8,10,11}},
     {"Mixolydian", std::vector<int>{1,3,5,6,8,10,11}},
     {"Chromatic", std::vector<int>{1,2,3,4,5,6,7,8,8,10,11,12}}
 };
@@ -45,6 +47,7 @@ const std::map<std::string, std::vector<int>> scaleToneWeights {
     {"Harmonic Minor", std::vector<int>{3,2,3,3,3,2,1}},
     {"Major Pentatonic", std::vector<int>{2,1,1,1,1}},
     {"Minor Pentatonic", std::vector<int>{1,1,1,1,1}},
+    {"Dorian", std::vector<int>{3,2,3,3,3,2,1}},
     {"Mixolydian", std::vector<int>{3,2,3,3,3,2,1}},
     {"Chromatic", std::vector<int>{1,1,1,1,1,1,1,1,1,1,1,1}},
 

@@ -95,7 +95,6 @@ struct Proteus : Module {
 	float triggerValueReset;
 
 	//boolean options
-	bool regen = true;
 	bool mutate = true;
 	bool accumulate = true;
 
@@ -123,12 +122,12 @@ struct Proteus : Module {
 	uint8_t restingCount = 0;
 	int octaveOffset = 0;
 	uint8_t mutationOption = DONT_MUTATE;
-	uint8_t repeatsInARow = 0;
 	uint8_t maxOctaveOffsetUp = 2;
 	uint8_t maxOctaveOffsetDown = 2;
 	int sequenceLength = 16;
 	uint8_t sequenceGap = 0;
 	double restProbability = 20; //out of 100
+	double restProbabilityPrev = 20;
 	float octaveChangeProbability = 20;
 	float noteChangeProbability = 20;
 	uint8_t currentNote = 0;
@@ -145,6 +144,7 @@ struct Proteus : Module {
 	double triggerGapSeconds = 0;
 	static const int numTriggersToAverage = 6;
 	float gateLengthKnobPosition;
+	int numTotalTriggers = 0;
 
 	float octaveCV;
 	float scaleCV;
@@ -161,13 +161,14 @@ struct Proteus : Module {
 		
 	int noteKind;
 	int noteOn;
+	// int aux_option;
 	
 	Proteus() {
 		config(PARAMS_LEN, INPUTS_LEN, OUTPUTS_LEN, LIGHTS_LEN);
 
 		configParam(POT1_PARAM, 1.0f, 32.0f, 16.0f, "Sequence length"," beats");
 		paramQuantities[POT1_PARAM]->snapEnabled = true;
-		configParam<scaleKnob>(POT2_PARAM, 1.f, 7.f, 1.f, "Scale");
+		configParam<scaleKnob>(POT2_PARAM, 1.f, 8.f, 1.f, "Scale");
 		paramQuantities[POT2_PARAM]->snapEnabled = true;
 		configParam(POT3_PARAM, 1.f, 50.f, 20.f, "Lambda");
 		paramQuantities[POT3_PARAM]->snapEnabled = true;
@@ -212,18 +213,7 @@ struct Proteus : Module {
 		json_object_set_new(root, "sequence", seq);
 		json_object_set_new(root, "octaveOffset", json_integer(octaveOffset));
 		json_object_set_new(root, "repetitionCount", json_integer(repetitionCount));
-
-
-		// json_object_set_new(root, "hold", json_boolean(hold));
-		// json_object_set_new(root, "gate", json_boolean(gate));
-		// json_object_set_new(root, "nc", json_integer(noteCount));
-		// json_object_set_new(root, "pc", json_integer(patternCount));
-		// json_object_set_new(root, "polyOutputs", json_boolean(polyOutputs));	
-		// json_object_set_new(root, "pattern", pat);
-		// json_object_set_new(root, "octave", oct);		
-		// json_object_set_new(root, "glide", gld);		
-		// json_object_set_new(root, "accent", acc);
-		// json_object_set_new(root, "cvList", cvl);
+		// json_object_set_new(root, "aux_option", json_integer(aux_option));
 			
 		return root;
 	}
@@ -252,6 +242,11 @@ struct Proteus : Module {
 		if(rc) {
 			repetitionCount = json_integer_value(rc);
 		}
+
+		// json_t *ao = json_object_get(root, "aux_option");
+		// if(ao) {
+		// 	aux_option = json_integer_value(ao);
+		// }
 
 	}	
 
@@ -297,6 +292,13 @@ struct Proteus : Module {
 		octaveChangeProbability = clamp(params[POT6_PARAM].getValue() + (10 * octaveCV),1.0,100.0);
 		noteChangeProbability = clamp(params[POT7_PARAM].getValue() + (10 * noteChangeCV),1.0,100.0);
 		gateLengthKnobPosition = clamp(params[POT4_PARAM].getValue() + (gateLengthCV/10),0.1,1.0);
+
+		//Check if density changed for live updating
+		if (restProbability != restProbabilityPrev) {
+			updateRests();
+		}
+
+		restProbabilityPrev = restProbability;
 
 		//Process outgoing gates
 		gateState = pulseGen.process(timePerTick);
@@ -355,13 +357,23 @@ struct Proteus : Module {
 			currentFrame = APP->engine->getFrame();
 			trigToTrigTime = currentFrame - prevFrame;
 			prevFrame = currentFrame;
-			triggerGapAccumulator += trigToTrigTime;
 			numRecentTriggers += 1;
-			triggerGapAverage = triggerGapAccumulator/numRecentTriggers;
-			triggerGapSeconds = triggerGapAverage/sampleRate;
-
-			//Adjust gate
-			gateDuration = gateLengthKnobPosition * triggerGapSeconds;
+			numTotalTriggers += 1;
+			if (trigToTrigTime > (sampleRate * 5)) {
+				//if there has been a really long gap, we reset (how long is too long?)
+				numTotalTriggers = 0;
+				numRecentTriggers = 0;
+				triggerGapAccumulator = 0;
+			}
+			if (numTotalTriggers > 2) {
+				triggerGapAccumulator += trigToTrigTime;
+				triggerGapAverage = triggerGapAccumulator/numRecentTriggers;
+				triggerGapSeconds = triggerGapAverage / sampleRate;
+				gateDuration = gateLengthKnobPosition * triggerGapSeconds;
+				if (gateDuration < 0.01f) { gateDuration = 0.01f;}
+			} else {
+				gateDuration = 0.125f;
+			}
 
 			if (numRecentTriggers > numTriggersToAverage) {
 				numRecentTriggers = 0;
@@ -371,6 +383,17 @@ struct Proteus : Module {
 			doStep();
 		}
 
+	}
+
+	void updateRests() {
+		for (int x = 0; x < 32; ++x) {
+			int noteOnChoice = std::rand() % 100;
+			if (noteOnChoice < restProbability) {
+				sequence[x].muted = true;
+			} else {
+				sequence[x].muted = false;
+			}
+		}
 	}
 
 	void doStep() {
@@ -419,7 +442,7 @@ struct Proteus : Module {
 		Note noteToPlay = sequence[currentNote];
 		
 		//Play the current step's note
-		if (noteToPlay.noteName != "rest") {
+		if (!noteToPlay.muted) {
 			//set the voltage
 			outputs[AUDIOOUT1_OUTPUT].setVoltage(noteToPlay.voltage);
 
@@ -556,69 +579,69 @@ struct Proteus : Module {
 				//first note is never a rest
 				noteOn = 1;
 			}
-			if (noteOn) {
-	
-				//We have an actual note, not a rest
-				//Decide what kind of note
-				//First note is always a new note
-				
-				if (x>0){
-					noteKind = weightedRandom(noteOptionWeights,4);
 			
-				} else {
-					noteKind = NM_NEW;
-				}
-				
-				if (noteKind == NM_REPEAT) {
-					sequence[x] = prevNote;
-
-				} else if (noteKind == NM_DOWN) {
-					//find tone of previous note in the scale, find index of toneNum in validTones
-					std::vector<int>::iterator it = std::find(validTones.begin(),validTones.end(),prevNote.toneNum);
-					int toneIndex = std::distance(validTones.begin(), it);
-					toneIndex--;
-					int newOctave = prevNote.octave;
-					if (toneIndex < 0) {
-						toneIndex = validTones.size()-1;
-						newOctave--;
-					}
-					int newTone = validTones[toneIndex];
-				
-					std::string newNoteName = prevNote.getNoteNameFromNum(newTone);
-
-					Note aNewNote = Note(newNoteName,newOctave);
-					sequence[x] = aNewNote;
-
-				} else if (noteKind == NM_UP) {
-					//find tone of previous note in the scale, find index of toneNum in validTones
-					std::vector<int>::iterator it = std::find(validTones.begin(),validTones.end(),prevNote.toneNum);
-					int toneIndex = std::distance(validTones.begin(), it);
-					toneIndex++;
-					int newOctave = prevNote.octave;
-					if (toneIndex >= int(validTones.size())) {
-						toneIndex = 0;
-						newOctave++;
-					}
-					int newTone = validTones[toneIndex];
-				
-					std::string newNoteName = prevNote.getNoteNameFromNum(newTone);
-
-					Note aNewNote = Note(newNoteName,newOctave);
-					sequence[x] = aNewNote;
-
-
-				} else if (noteKind == NM_NEW) {
-					Note newNote = getRandomNote();
-					sequence[x] = newNote;
-					prevNote = newNote;
-				}
-				prevNote = sequence[x];
-
+			//Decide what kind of note
+			//First note is always a new note
+			
+			if (x>0){
+				noteKind = weightedRandom(noteOptionWeights,4);
 			} else {
-				//We have a rest beat
-				Note newNote = Note("rest");
-				sequence[x] = newNote;
+				noteKind = NM_NEW;
 			}
+			
+			if (noteKind == NM_REPEAT) {
+				sequence[x] = prevNote;
+
+			} else if (noteKind == NM_DOWN) {
+				//find tone of previous note in the scale, find index of toneNum in validTones
+				std::vector<int>::iterator it = std::find(validTones.begin(),validTones.end(),prevNote.toneNum);
+				int toneIndex = std::distance(validTones.begin(), it);
+				toneIndex--;
+				int newOctave = prevNote.octave;
+				if (toneIndex < 0) {
+					toneIndex = validTones.size()-1;
+					newOctave--;
+				}
+				int newTone = validTones[toneIndex];
+			
+				std::string newNoteName = prevNote.getNoteNameFromNum(newTone);
+
+				Note aNewNote = Note(newNoteName,newOctave);
+				sequence[x] = aNewNote;
+
+			} else if (noteKind == NM_UP) {
+				//find tone of previous note in the scale, find index of toneNum in validTones
+				std::vector<int>::iterator it = std::find(validTones.begin(),validTones.end(),prevNote.toneNum);
+				int toneIndex = std::distance(validTones.begin(), it);
+				toneIndex++;
+				int newOctave = prevNote.octave;
+				if (toneIndex >= int(validTones.size())) {
+					toneIndex = 0;
+					newOctave++;
+				}
+				int newTone = validTones[toneIndex];
+			
+				std::string newNoteName = prevNote.getNoteNameFromNum(newTone);
+
+				Note aNewNote = Note(newNoteName,newOctave);
+				sequence[x] = aNewNote;
+
+
+			} else if (noteKind == NM_NEW) {
+				Note newNote = getRandomNote();
+				sequence[x] = newNote;
+				prevNote = newNote;
+			}
+
+			if (noteOn) {
+				sequence[x].muted = false;
+			} else {
+				sequence[x].muted = true;
+			}
+
+			prevNote = sequence[x];
+
+			
 
 		}
 	
@@ -687,6 +710,17 @@ struct ProteusWidget : ModuleWidget {
 		addParam(createParamCentered<CKSSThreeHorizontal>(mm2px(Vec(7.756, 59.027)), module, Proteus::SWITCH1_PARAM));
 		addParam(createParamCentered<CKSSThreeHorizontal>(mm2px(Vec(7.756, 66.507)), module, Proteus::SWITCH2_PARAM));
 	}
+
+	// void appendContextMenu(Menu* menu) override {
+	// 	Proteus* module = dynamic_cast<Proteus*>(this->module);
+
+	// 	menu->addChild(new MenuSeparator);
+
+	// 	menu->addChild(createIndexSubmenuItem("Aux input function", {"Reset","Lock"},
+	// 		[=]() { return module->aux_option;},
+	// 		[=](int option) {module->aux_option = option;}
+	// 	));
+	// }
 };
 
 
