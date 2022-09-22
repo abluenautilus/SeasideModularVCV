@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.1.0 21 Sept 2022
+## v2.1.0 - 21 Sept 2022
 
 • Added RESET jack
 

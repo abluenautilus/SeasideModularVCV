@@ -344,6 +344,7 @@ struct Proteus : Module {
 		//process reset trigger
 		if (!prevTriggerStateReset && triggerStateReset) {
 			currentNote = 0;
+			activeLED=0;
 		}
 
 		
@@ -383,7 +384,8 @@ struct Proteus : Module {
 	}
 
 	void updateRests() {
-		for (int x = 0; x < 32; ++x) {
+		//start at the second step to leave the first one always on
+		for (int x = 1; x < 32; ++x) {
 			int noteOnChoice = std::rand() % 100;
 			if (noteOnChoice < restProbability) {
 				sequence[x].muted = true;
