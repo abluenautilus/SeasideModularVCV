@@ -11,7 +11,7 @@
   "manualUrl": "https://github.com/abluenautilus/SeasideModularVCV/blob/master/README.md",
   "sourceUrl": "https://github.com/abluenautilus/SeasideModularVCV",
   "donateUrl": "",
-  "changelogUrl": "",
+  "changelogUrl": "https://github.com/abluenautilus/SeasideModularVCV/blob/master/CHANGELOG.md",
   "modules": [
     {
       "slug": "Proteus",

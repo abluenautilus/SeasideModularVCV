@@ -312,19 +312,16 @@ struct Proteus : Module {
 		if (params[SWITCH1_PARAM].getValue() == 0) {
 			//Normal mode, mutation and regen both on
 			mutate = true;
-			regen = true;
 			accumulate = true;
 
 		} else if (params[SWITCH1_PARAM].getValue() == 1) {
 			//allow to regen but no mutations
 			mutate = true;
-			regen = true;
 			accumulate = false;
 
 		} else if (params[SWITCH1_PARAM].getValue() == 2) {
 			//no changes at all
 			mutate = false;
-			regen = false;
 			accumulate = false;
 		}
 
