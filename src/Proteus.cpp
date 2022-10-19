@@ -879,7 +879,7 @@ struct ProteusWidget : ModuleWidget {
 			[=](int option) {module->mutate_octave_option = option;}
 		));
 
-		menu->addChild(createIndexSubmenuItem("Lock CV In Behavior", {"1-3","1-2","1-2-3","Hi/Low"},
+		menu->addChild(createIndexSubmenuItem("Lock CV In Behavior", {"0-2","0-1","0-1-2","Hi/Low"},
 			[=]() { return module->lock_option;},
 			[=](int option) {module->lock_option = option;}
 		));

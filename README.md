@@ -50,10 +50,10 @@ Len, Lambda, Density, Mutate, Gate, and Octave are CV controls for their respect
 **CLOCK** - This is the clock input. Each trigger incoming on this port advances the sequence one step. 
 
 **LOCK** - A trigger into this jack will change the lock mode according to the menu option you have set: 
-    *1-3 (Default):* Trigger toggles between modes 1 and 3
-    *1-2:* Trigger toggles between modes 1 and 2
-    *1-2-3:* Trigger cycles through the three modes
-    *Hi/Low:* As long as the trigger is high, the sequence will be totally locked (i.e., mode 3), and when it is low, the  sequence will be totally unlocked (mode 1)
+    *0-2 (Default):* Trigger toggles between modes 0 and 2
+    *0-1:* Trigger toggles between modes 0 and 1
+    *0-1-2:* Trigger cycles through the three modes
+    *Hi/Low:* As long as the trigger is high, the sequence will be totally locked (i.e., mode 2), and when it is low, the  sequence will be totally unlocked (mode 0)
 
 **NEW** -  trigger on this channel will cause Proteus to immediately generate a new melody. 
 

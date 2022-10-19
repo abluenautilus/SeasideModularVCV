@@ -9,10 +9,10 @@
 • There is now a menu option for mutated notes to jump octaves, constrained by the octave range setting. In other words, with this option on, and octave range set to 1, a mutated note may appear anywhere from 1 octave above to 1 octave below the sequence. 
 
 • Lock CV input has replaced the Scale CV input. A trigger into this jack will change the lock mode according to the menu option you have set: 
-    *1-3 (Default):* Trigger toggles between modes 1 and 3
-    *1-2:* Trigger toggles between modes 1 and 2
-    *1-2-3:* Trigger cycles through the three modes
-    *Hi/Low:* As long as the trigger is high, the sequence will be totally locked (i.e., mode 3), and when it is low, the  sequence will be totally unlocked (mode 1)
+    *0-2 (Default):* Trigger toggles between modes 0 and 2
+    *0-1:* Trigger toggles between modes 0 and 1
+    *0-1-2:* Trigger cycles through the three modes
+    *Hi/Low:* As long as the trigger is high, the sequence will be totally locked (i.e., mode 2), and when it is low, the  sequence will be totally unlocked (mode 0)
 
 
 ## v2.1.0 - 21 Sept 2022
