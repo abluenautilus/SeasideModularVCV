@@ -1,12 +1,17 @@
 # Seaside Modular VCV Rack Plugin
 
-## Proteus Module v2.1.0
+## Proteus Module v2.2.0
 
 Proteus is a generative sequencer. It creates a melody, then loops that melody for a while, until it gets bored and creates a new one. While it's looping the melody, it may transpose by octave or mutate individual notes as controlled by the knobs or CV.
 
 A video demonstration can be found here (note it needs to be updated with the latest panel): 
 
 https://www.youtube.com/watch?v=XAcYI5NUyIQ
+
+Announcement and discussion thread: 
+
+https://community.vcvrack.com/t/proteus-from-seaside-modular-a-new-generative-sequencer-v-2-1-0-released/18298/42
+
 
 ### Controls
 
@@ -26,7 +31,7 @@ Chromatic
 
 **Gate** - This is the length of the gate output as a fraction of the incoming clock time (average trigger-to-trigger time).
 
-**Density** - This controls the density of the melodies. As you turn this knob towards 100, the probability of rest notes decreases to 0 and all the steps will be filled with notes. Density is changed dynamically; every time the parameter changes, each note's probabilty of becoming a rest is independently re-calculated according to this parameter. 
+**Density** - This controls the density of the melodies. As you turn this knob towards 100, the proportion of rest notes decreases to 0 and all the steps will be filled with notes. Density is changed dynamically; every time the parameter changes, each note's probabilty of becoming a rest is independently re-calculated according to this parameter. Notes appear and disappear in the same order, so that if you increase density and then decrease it, you will come back to the exact same sequence. 
 
 **Octave** - Controls octave transposition probability. 
 
@@ -40,9 +45,15 @@ Chromatic
 
 ### Inputs
 
-Len, Lambda, Density, Mutate, Scale, Gate, and Octave are CV controls for their respective parameters. 
+Len, Lambda, Density, Mutate, Gate, and Octave are CV controls for their respective parameters. 
 
 **CLOCK** - This is the clock input. Each trigger incoming on this port advances the sequence one step. 
+
+**LOCK** - A trigger into this jack will change the lock mode according to the menu option you have set: 
+    *1-3 (Default):* Trigger toggles between modes 1 and 3
+    *1-2:* Trigger toggles between modes 1 and 2
+    *1-2-3:* Trigger cycles through the three modes
+    *Hi/Low:* As long as the trigger is high, the sequence will be totally locked (i.e., mode 3), and when it is low, the  sequence will be totally unlocked (mode 1)
 
 **NEW** -  trigger on this channel will cause Proteus to immediately generate a new melody. 
 

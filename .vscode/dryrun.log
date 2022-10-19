@@ -2,6 +2,7 @@ make all --dry-run --always-make --keep-going --print-directory
 make: Entering directory `/Users/jonask/Music/VCVRack/Rack/plugins/Seaside'
 mkdir -p build/src
 c++  -std=c++11 -stdlib=libc++   -fPIC -I../../include -I../../dep/include -MMD -MP -g -O3 -march=nehalem -funsafe-math-optimizations -fno-omit-frame-pointer -Wall -Wextra -Wno-unused-parameter -DARCH_MAC -mmacosx-version-min=10.9  -c -o build/src/Proteus.cpp.o src/Proteus.cpp
+ 
 mkdir -p build/src
 c++  -std=c++11 -stdlib=libc++   -fPIC -I../../include -I../../dep/include -MMD -MP -g -O3 -march=nehalem -funsafe-math-optimizations -fno-omit-frame-pointer -Wall -Wextra -Wno-unused-parameter -DARCH_MAC -mmacosx-version-min=10.9  -c -o build/src/plugin.cpp.o src/plugin.cpp
 mkdir -p build/inc

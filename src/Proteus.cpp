@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <random>
+#include <algorithm>
 #include "../inc/Note.hpp"
 #include "../inc/Scales.hpp"
 #include "../inc/poisson.hpp"
@@ -94,9 +95,17 @@ struct Proteus : Module {
 	bool prevTriggerStateReset = false;
 	float triggerValueReset;
 
+	//Lock toggle trigger
+	dsp::SchmittTrigger strigLock;
+	bool triggerStateLock = false;
+	bool prevTriggerStateLock = false;
+	float triggerValueLock;
+
 	//boolean options
 	bool mutate = true;
 	bool accumulate = true;
+	int mutate_octave_option = 0;
+	int lock_option = 0;
 
 	//The sequence
 	static const int maxSteps = 32;
@@ -125,6 +134,7 @@ struct Proteus : Module {
 	uint8_t maxOctaveOffsetUp = 2;
 	uint8_t maxOctaveOffsetDown = 2;
 	int sequenceLength = 16;
+	int sequenceLengthPrev = 16;
 	uint8_t sequenceGap = 0;
 	double restProbability = 20; //out of 100
 	double restProbabilityPrev = 20;
@@ -154,6 +164,7 @@ struct Proteus : Module {
 	float densityCV;
 	float modulateCV;
 	float lengthCV;
+	std::default_random_engine rng;
 
 	uint8_t poisson_lambda = 12;
 
@@ -161,7 +172,9 @@ struct Proteus : Module {
 		
 	int noteKind;
 	int noteOn;
-	// int aux_option;
+
+	int numRestNotes = 0;
+	std::vector<int> restorder;
 	
 	Proteus() {
 		config(PARAMS_LEN, INPUTS_LEN, OUTPUTS_LEN, LIGHTS_LEN);
@@ -183,7 +196,7 @@ struct Proteus : Module {
 		configParam(SWITCH1_PARAM, 0.f, 2.f, 0.f, "Mode");
 		configParam(SWITCH2_PARAM, 0.f, 2.f, 1.f, "Octave Range");
 		configInput(CV1_INPUT, "Seq Length CV");
-		configInput(CV2_INPUT, "Scale CV");
+		configInput(CV2_INPUT, "Lock CV");
 		configInput(CV3_INPUT, "Lambda CV");
 		configInput(CV4_INPUT, "Gate Length CV");
 		configInput(CV5_INPUT, "Density CV");
@@ -196,6 +209,13 @@ struct Proteus : Module {
 		configOutput(AUDIOOUT1_OUTPUT, "CV 1V/OCT");
 		configOutput(AUDIOOUT2_OUTPUT, "Gate");
 
+		densityCV = clamp(inputs[CV5_INPUT].getVoltage(),-10.0,10.0);
+		lengthCV = clamp(inputs[CV1_INPUT].getVoltage(),-10.0,10.0);
+		int lengthAdjustment = (maxSteps/10) * lengthCV;
+		sequenceLength = clamp(int(params[POT1_PARAM].getValue()) + lengthAdjustment,1,maxSteps);
+		restProbability = clamp(100 - params[POT5_PARAM].getValue() - (10 * densityCV),0.0,100.0); 
+
+		rng.seed(std::chrono::system_clock::now().time_since_epoch().count());
 		newMelody();
 	}
 
@@ -205,16 +225,22 @@ struct Proteus : Module {
 		json_object_set_new(root, "moduleVersion", json_integer(2));
 		
 		json_t *seq = json_array();
-
 		for (int i = 0; i < 32; i++) {
 			json_array_insert_new(seq, i, json_integer(sequence[i].noteNumMIDI));
 		}
 
+		json_t *ro = json_array();
+		for (int i = 0; i < sequenceLength; i++) {
+			json_array_insert_new(ro, i, json_integer(restorder[i]));
+		}
+
 		json_object_set_new(root, "sequence", seq);
+		json_object_set_new(root, "restorder", ro);
 		json_object_set_new(root, "octaveOffset", json_integer(octaveOffset));
 		json_object_set_new(root, "repetitionCount", json_integer(repetitionCount));
-		// json_object_set_new(root, "aux_option", json_integer(aux_option));
-			
+		json_object_set_new(root,"mutate_octave_option",json_integer(mutate_octave_option));
+		json_object_set_new(root,"lock_option",json_integer(lock_option));
+
 		return root;
 	}
 
@@ -233,6 +259,19 @@ struct Proteus : Module {
 			}
 		}
 
+		json_t *ro = json_object_get(root,"restorder");
+		for (int i = 0; i < 32; i++) {
+			if (ro) {
+				json_t *x = json_array_get(ro, i);
+				if (x) {
+					restorder[i] = json_integer_value(x);
+				} else {
+					restorder.resize(i);
+					break;
+				}
+			}
+		}
+
 		json_t *oo = json_object_get(root, "octaveOffset");
 		if(oo) {
 			octaveOffset = json_integer_value(oo);
@@ -243,10 +282,16 @@ struct Proteus : Module {
 			repetitionCount = json_integer_value(rc);
 		}
 
-		// json_t *ao = json_object_get(root, "aux_option");
-		// if(ao) {
-		// 	aux_option = json_integer_value(ao);
-		// }
+		json_t *mo = json_object_get(root, "mutate_octave_option");
+		if(mo) {
+			mutate_octave_option = json_integer_value(mo);
+		}
+
+		json_t *lo = json_object_get(root, "lock_option");
+		if(lo) {
+			lock_option = json_integer_value(lo);
+		}
+
 
 	}	
 
@@ -262,6 +307,11 @@ struct Proteus : Module {
 		strigReset.process(rescale(triggerValueReset, 0.1f, 2.0f, 0.f, 1.f));
 		prevTriggerStateReset = triggerStateReset;
 		triggerStateReset = strigReset.isHigh();
+
+		triggerValueLock = inputs[CV2_INPUT].getVoltage();
+		strigLock.process(rescale(triggerValueLock, 0.1f, 2.0f, 0.f, 1.f));
+		prevTriggerStateLock = triggerStateLock;
+		triggerStateLock = strigLock.isHigh();
 
 		triggerValueNewMelody = inputs[CV8_INPUT].getVoltage();
 		strigNewMelody.process(rescale(triggerValueNewMelody, 0.1f, 2.0f, 0.f, 1.f));
@@ -295,10 +345,34 @@ struct Proteus : Module {
 
 		//Check if density changed for live updating
 		if (restProbability != restProbabilityPrev) {
+			restorder.resize(sequenceLength);
 			updateRests();
 		}
-
 		restProbabilityPrev = restProbability;
+		
+		//If sequence length changed we may need to adjust rests
+		if (sequenceLength != sequenceLengthPrev) {
+			if (sequenceLength > sequenceLengthPrev) {
+				restorder.resize(sequenceLength);
+				std::vector<int> hiddenRests(0);
+				for (int y=sequenceLengthPrev; y<32; ++y) {
+					hiddenRests.push_back(y);
+				}
+				
+				std::shuffle(std::begin(hiddenRests),std::end(hiddenRests),rng);
+				int counter = 0;
+				for (int w = sequenceLengthPrev; w < sequenceLength; ++w) {
+					restorder[w] = hiddenRests[counter];
+					++counter;
+				}
+				updateRests();
+			} else {
+				restorder.resize(sequenceLength);
+				updateRests();
+			}
+		} 
+
+		sequenceLengthPrev = sequenceLength;
 
 		//Process outgoing gates
 		gateState = pulseGen.process(timePerTick);
@@ -335,6 +409,59 @@ struct Proteus : Module {
 			maxOctaveOffsetDown = 2;
 			maxOctaveOffsetUp = 2;
 		}
+
+		//process lock trigger
+		if (!prevTriggerStateLock && triggerStateLock) {
+			if (lock_option==0) {
+				if (accumulate) {
+					accumulate = false;
+					mutate = false;
+					params[SWITCH1_PARAM].setValue(2);
+				} else {
+					mutate = true;
+					accumulate = true;
+					params[SWITCH1_PARAM].setValue(0);
+				}
+			} else if (lock_option==1) {
+				if (params[SWITCH1_PARAM].getValue()>=1) {
+					accumulate = true;
+					mutate = true;
+					params[SWITCH1_PARAM].setValue(0);
+				} else {
+					mutate = true;
+					accumulate = false;
+					params[SWITCH1_PARAM].setValue(1);
+				}
+			} else if (lock_option==2) {
+				int p = params[SWITCH1_PARAM].getValue();
+				if (p==0) {
+					params[SWITCH1_PARAM].setValue(1);
+					accumulate = false;
+					mutate = true;
+				} else if (p==1) {
+					params[SWITCH1_PARAM].setValue(2);
+					accumulate = false;
+					mutate = false;
+				} else if (p==2) {
+					params[SWITCH1_PARAM].setValue(0);
+					accumulate = true;
+					mutate = true;
+				}
+			} else if (lock_option == 3) {
+					accumulate = false;
+					mutate = false;
+					params[SWITCH1_PARAM].setValue(2);
+			}
+		}
+		if (prevTriggerStateLock && !triggerStateLock) {
+			if (lock_option==3){
+				accumulate = true;
+				mutate = true;
+				params[SWITCH1_PARAM].setValue(0);
+			}
+		}
+
+
 
 		//process new melody incoming trigger
 		if (!prevTriggerStateNewMelody && triggerStateNewMelody) {
@@ -384,13 +511,15 @@ struct Proteus : Module {
 	}
 
 	void updateRests() {
-		//start at the second step to leave the first one always on
-		for (int x = 1; x < 32; ++x) {
-			int noteOnChoice = std::rand() % 100;
-			if (noteOnChoice < restProbability) {
-				sequence[x].muted = true;
+		
+		numRestNotes = ceil(sequenceLength*(restProbability/100));
+		if (numRestNotes == sequenceLength) {--numRestNotes;} //always leave at least one note
+
+		for (int x = 0; x < sequenceLength; ++x) {
+			if (x < numRestNotes) {
+				sequence[restorder[x]].muted = true;
 			} else {
-				sequence[x].muted = false;
+				sequence[restorder[x]].muted = false;
 			}
 		}
 	}
@@ -538,7 +667,7 @@ struct Proteus : Module {
 		
 		//substitute notes in the melody with new notes
 		int noteToChange = std::rand() % sequenceLength;
-		Note newNote = getRandomNote();
+		Note newNote = getRandomNoteMutate();
 		//new notes should follow Density
 		int noteOnChoice = std::rand() % 100;
 		if (noteOnChoice < restProbability) {
@@ -557,6 +686,15 @@ struct Proteus : Module {
 		validTones = scaleTones.at(scale);
 		validToneWeights = scaleToneWeights.at(scale);
 
+		//shuffle rest order
+		restorder.resize(sequenceLength);
+		for (int i = 0; i<sequenceLength; ++i) {
+			restorder[i] = i+1;
+		}
+		std::shuffle(std::begin(restorder),std::end(restorder),rng);
+		numRestNotes = ceil(sequenceLength*(restProbability/100));
+		if (numRestNotes == sequenceLength) {--numRestNotes;} //always leave at least one note
+
 		//Generate a new melody from scratch
 
 		//Flash lights
@@ -570,21 +708,6 @@ struct Proteus : Module {
 		repetitionCount = 0;
 
 		for (int x = 0; x < maxSteps; x++ ){
-			
-			if (x>0) {
-
-				//Use rest probability (density?) to decide if we have a rest
-				int noteOnChoice = std::rand() % 100;
-				if (noteOnChoice < restProbability) {
-					noteOn = 0;
-				} else {
-					noteOn = 1;
-				}
-
-			} else {
-				//first note is never a rest
-				noteOn = 1;
-			}
 			
 			//Decide what kind of note
 			//First note is always a new note
@@ -639,21 +762,22 @@ struct Proteus : Module {
 				prevNote = newNote;
 			}
 
-			if (noteOn) {
-				sequence[x].muted = false;
+			prevNote = sequence[x];		
+
+		}
+		for (int x = 0; x < sequenceLength; ++x) {
+			if (x < numRestNotes) {
+				sequence[restorder[x]].muted = true;
 			} else {
-				sequence[x].muted = true;
+				sequence[restorder[x]].muted = false;
 			}
-
-			prevNote = sequence[x];
-
-			
-
 		}
 	
 	}
 
 	Note getRandomNote() {
+
+		//Get a random note from the scale
 
 		int ourSemitone;
 		int newNoteMIDI;
@@ -665,13 +789,41 @@ struct Proteus : Module {
 		ourSemitone = validTones[ourChoice];
 		newNoteMIDI = rootNote.noteNumMIDI + ourSemitone - 1;
 		Note newNote = Note(newNoteMIDI);
+
+		return newNote;
+
+	}
+
+	Note getRandomNoteMutate() {
+
+		//Get a random note from the scale but also randomly assign it an octave within
+		//the allowable range if the option is set to do so. 
+
+		int ourSemitone;
+		int newNoteMIDI;
+		int ourChoice;
+
+		int num_choices = validToneWeights.size();
+		ourChoice = weightedRandom(&validToneWeights[0],num_choices);
+
+		ourSemitone = validTones[ourChoice];
+		newNoteMIDI = rootNote.noteNumMIDI + ourSemitone - 1;
+		Note newNote = Note(newNoteMIDI);
+
+		if (mutate_octave_option) {
+			int octaveRange = maxOctaveOffsetUp + maxOctaveOffsetDown + 1;
+			int octavePos = std::rand() % octaveRange;
+			int thisOctave = baseOctave + octaveOffset - maxOctaveOffsetDown + octavePos;
+			newNote.octave = thisOctave;
+			newNote.setNoteNumMIDI();
+			newNote.setVoltage();
+		}
+
 		return newNote;
 
 	}
 
 };
-
-
 
 
 struct ProteusWidget : ModuleWidget {
@@ -717,16 +869,21 @@ struct ProteusWidget : ModuleWidget {
 		addParam(createParamCentered<CKSSThreeHorizontal>(mm2px(Vec(7.756, 66.507)), module, Proteus::SWITCH2_PARAM));
 	}
 
-	// void appendContextMenu(Menu* menu) override {
-	// 	Proteus* module = dynamic_cast<Proteus*>(this->module);
+	void appendContextMenu(Menu* menu) override {
+		Proteus* module = dynamic_cast<Proteus*>(this->module);
 
-	// 	menu->addChild(new MenuSeparator);
+		menu->addChild(new MenuSeparator);
 
-	// 	menu->addChild(createIndexSubmenuItem("Aux input function", {"Reset","Lock"},
-	// 		[=]() { return module->aux_option;},
-	// 		[=](int option) {module->aux_option = option;}
-	// 	));
-	// }
+		menu->addChild(createIndexSubmenuItem("Mutation can tranpose notes by octave", {"Off","On"},
+			[=]() { return module->mutate_octave_option;},
+			[=](int option) {module->mutate_octave_option = option;}
+		));
+
+		menu->addChild(createIndexSubmenuItem("Lock CV In Behavior", {"1-3","1-2","1-2-3","Hi/Low"},
+			[=]() { return module->lock_option;},
+			[=](int option) {module->lock_option = option;}
+		));
+	}
 };
 
 

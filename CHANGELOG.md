@@ -1,5 +1,20 @@
 # Changelog
 
+## v2.2.0 - 18 Oct 2022
+
+• Density now affects the overall proportion of notes in the sequence that are present instead of a probability applied to each note individually. This means that if Density is set to 50%, you will always have exactly 50% of the notes present. This also solves the problem of sequences with low Density ending up empty. There will always be at least one note on in the sequence. 
+
+• Live density changes are made in a fixed order. That means that if you start with 50% of the notes, and turn Density up to 100%, the notes will fill in, and then when you move the knob back to 50% the notes will disappear in the order that they came in, such that when you get back to 50% you will have exactly the same sequence you started with. 
+
+• There is now a menu option for mutated notes to jump octaves, constrained by the octave range setting. In other words, with this option on, and octave range set to 1, a mutated note may appear anywhere from 1 octave above to 1 octave below the sequence. 
+
+• Lock CV input has replaced the Scale CV input. A trigger into this jack will change the lock mode according to the menu option you have set: 
+    *1-3 (Default):* Trigger toggles between modes 1 and 3
+    *1-2:* Trigger toggles between modes 1 and 2
+    *1-2-3:* Trigger cycles through the three modes
+    *Hi/Low:* As long as the trigger is high, the sequence will be totally locked (i.e., mode 3), and when it is low, the  sequence will be totally unlocked (mode 1)
+
+
 ## v2.1.0 - 21 Sept 2022
 
 • Added RESET jack
