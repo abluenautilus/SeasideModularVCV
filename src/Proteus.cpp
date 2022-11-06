@@ -174,8 +174,8 @@ struct Proteus : Module {
 	int noteOn;
 
 	int numRestNotes = 0;
-	std::vector<int> restorder;
-	
+	int restorder[maxSteps];
+
 	Proteus() {
 		config(PARAMS_LEN, INPUTS_LEN, OUTPUTS_LEN, LIGHTS_LEN);
 
@@ -220,6 +220,7 @@ struct Proteus : Module {
 	}
 
 	json_t *dataToJson() override {
+
 		json_t *root = json_object();
 
 		json_object_set_new(root, "moduleVersion", json_integer(2));
@@ -230,7 +231,7 @@ struct Proteus : Module {
 		}
 
 		json_t *ro = json_array();
-		for (int i = 0; i < sequenceLength; i++) {
+		for (int i = 0; i < maxSteps; i++) {
 			json_array_insert_new(ro, i, json_integer(restorder[i]));
 		}
 
@@ -240,11 +241,13 @@ struct Proteus : Module {
 		json_object_set_new(root, "repetitionCount", json_integer(repetitionCount));
 		json_object_set_new(root,"mutate_octave_option",json_integer(mutate_octave_option));
 		json_object_set_new(root,"lock_option",json_integer(lock_option));
+		json_object_set_new(root,"sequenceLength",json_integer(sequenceLength));
 
 		return root;
 	}
 
 	void dataFromJson(json_t* root) override {
+
 
 		json_t *seq = json_object_get(root, "sequence");
 		
@@ -259,15 +262,19 @@ struct Proteus : Module {
 			}
 		}
 
-		json_t *ro = json_object_get(root,"restorder");
-		for (int i = 0; i < 32; i++) {
-			if (ro) {
-				json_t *x = json_array_get(ro, i);
-				if (x) {
-					restorder[i] = json_integer_value(x);
-				} else {
-					restorder.resize(i);
-					break;
+		json_t *sl = json_object_get(root, "sequenceLength");
+		if(sl) {
+			sequenceLength = json_integer_value(sl);
+		}
+		
+		if (sequenceLength) {
+			json_t *ro = json_object_get(root,"restorder");
+			for (int i = 0; i < maxSteps; i++) {
+				if (ro) {
+					json_t *x = json_array_get(ro, i);
+					if (x) {
+						restorder[i] = json_integer_value(x);
+					} 
 				}
 			}
 		}
@@ -345,7 +352,6 @@ struct Proteus : Module {
 
 		//Check if density changed for live updating
 		if (restProbability != restProbabilityPrev) {
-			restorder.resize(sequenceLength);
 			updateRests();
 		}
 		restProbabilityPrev = restProbability;
@@ -353,13 +359,16 @@ struct Proteus : Module {
 		//If sequence length changed we may need to adjust rests
 		if (sequenceLength != sequenceLengthPrev) {
 			if (sequenceLength > sequenceLengthPrev) {
-				restorder.resize(sequenceLength);
-				std::vector<int> hiddenRests(0);
-				for (int y=sequenceLengthPrev; y<32; ++y) {
-					hiddenRests.push_back(y);
+				
+				int numHidden = sequenceLength - sequenceLengthPrev;
+				int hiddenRests[numHidden];
+				int x = 0;
+				for (int y=sequenceLengthPrev-1; y<sequenceLength; ++y) {
+					hiddenRests[x] = y;
+					++x;
 				}
 				
-				std::shuffle(std::begin(hiddenRests),std::end(hiddenRests),rng);
+				std::shuffle(&hiddenRests[0],&hiddenRests[numHidden-1],rng);
 				int counter = 0;
 				for (int w = sequenceLengthPrev; w < sequenceLength; ++w) {
 					restorder[w] = hiddenRests[counter];
@@ -367,7 +376,6 @@ struct Proteus : Module {
 				}
 				updateRests();
 			} else {
-				restorder.resize(sequenceLength);
 				updateRests();
 			}
 		} 
@@ -511,7 +519,7 @@ struct Proteus : Module {
 	}
 
 	void updateRests() {
-		
+
 		numRestNotes = ceil(sequenceLength*(restProbability/100));
 		if (numRestNotes == sequenceLength) {--numRestNotes;} //always leave at least one note
 
@@ -568,7 +576,7 @@ struct Proteus : Module {
 		if (activeLED >= LIGHTS_LEN) {activeLED=0;}
 
 		Note noteToPlay = sequence[currentNote];
-		
+
 		//Play the current step's note
 		if (!noteToPlay.muted) {
 			//set the voltage
@@ -581,9 +589,10 @@ struct Proteus : Module {
 		}
 		
 		++currentNote;
+
 		//Deal with end of loop scenarios
 		if (currentNote >= sequenceLength) {
-			
+
 			//We are looping, so we need to check for various changes
 			//accumulate means we are accruing repetitions
 			if (accumulate) {
@@ -687,11 +696,10 @@ struct Proteus : Module {
 		validToneWeights = scaleToneWeights.at(scale);
 
 		//shuffle rest order
-		restorder.resize(sequenceLength);
 		for (int i = 0; i<sequenceLength; ++i) {
-			restorder[i] = i+1;
+			restorder[i] = i;
 		}
-		std::shuffle(std::begin(restorder),std::end(restorder),rng);
+		std::shuffle(std::begin(restorder),&restorder[sequenceLength-1],rng);
 		numRestNotes = ceil(sequenceLength*(restProbability/100));
 		if (numRestNotes == sequenceLength) {--numRestNotes;} //always leave at least one note
 
@@ -717,11 +725,13 @@ struct Proteus : Module {
 			} else {
 				noteKind = NM_NEW;
 			}
-			
+
 			if (noteKind == NM_REPEAT) {
+
 				sequence[x] = prevNote;
 
 			} else if (noteKind == NM_DOWN) {
+
 				//find tone of previous note in the scale, find index of toneNum in validTones
 				std::vector<int>::iterator it = std::find(validTones.begin(),validTones.end(),prevNote.toneNum);
 				int toneIndex = std::distance(validTones.begin(), it);
@@ -739,6 +749,7 @@ struct Proteus : Module {
 				sequence[x] = aNewNote;
 
 			} else if (noteKind == NM_UP) {
+
 				//find tone of previous note in the scale, find index of toneNum in validTones
 				std::vector<int>::iterator it = std::find(validTones.begin(),validTones.end(),prevNote.toneNum);
 				int toneIndex = std::distance(validTones.begin(), it);
@@ -757,6 +768,7 @@ struct Proteus : Module {
 
 
 			} else if (noteKind == NM_NEW) {
+
 				Note newNote = getRandomNote();
 				sequence[x] = newNote;
 				prevNote = newNote;
