@@ -1,7 +1,7 @@
 /build
-/dist
 /plugin.so
 /plugin.dylib
 /plugin.dll
+/.vscode/targets.log
 .DS_Store
 todo
