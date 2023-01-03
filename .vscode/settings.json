@@ -110,5 +110,6 @@
        ],
        "stopAtEntry": true
     }
-  ]
+],
+"C_Cpp.errorSquiggles": "enabled"
  }

@@ -12,6 +12,15 @@
 #define GATE_HIGH_VOLTAGE 10.0f
 #define LED_BRIGHTNESS_ON 1.0f
 
+struct proteusMessage {
+    Note sequence[32];
+	int restorder[32];
+    int loadButtonPressed;
+	float transposeValue;
+    int restValue;
+	std::string type;
+};
+
 struct Proteus : Module {
 	enum ParamId {
 		POT1_PARAM,
@@ -57,6 +66,9 @@ struct Proteus : Module {
 		LED4_LIGHT_RED,
 		LED4_LIGHT_GREEN,
 		LED4_LIGHT_BLUE,
+		LEDX_LIGHT_RED,
+		LEDX_LIGHT_GREEN,
+		LEDX_LIGHT_BLUE,
 		LIGHTS_LEN
 	};
 
@@ -155,6 +167,10 @@ struct Proteus : Module {
 	static const int numTriggersToAverage = 6;
 	float gateLengthKnobPosition;
 	int numTotalTriggers = 0;
+	bool newMelodyPressed = false;
+	float restValue, transposeValue = 0;
+	bool restMode = false;
+	int restStep = 0;
 
 	float octaveCV;
 	float scaleCV;
@@ -175,6 +191,9 @@ struct Proteus : Module {
 
 	int numRestNotes = 0;
 	int restorder[maxSteps];
+
+	//Expander
+	proteusMessage rightMessages[2][1] = {};
 
 	Proteus() {
 		config(PARAMS_LEN, INPUTS_LEN, OUTPUTS_LEN, LIGHTS_LEN);
@@ -208,6 +227,9 @@ struct Proteus : Module {
 
 		configOutput(AUDIOOUT1_OUTPUT, "CV 1V/OCT");
 		configOutput(AUDIOOUT2_OUTPUT, "Gate");
+
+		rightExpander.producerMessage = rightMessages[0];
+		rightExpander.consumerMessage = rightMessages[1];
 
 		densityCV = clamp(inputs[CV5_INPUT].getVoltage(),-10.0,10.0);
 		lengthCV = clamp(inputs[CV1_INPUT].getVoltage(),-10.0,10.0);
@@ -328,6 +350,9 @@ struct Proteus : Module {
 		//Process regen button
 		if (patternResetTrig.process(params[BUTTON1_PARAM].getValue())) {
 			newMelody();
+			newMelodyPressed = true;
+		} else {
+			newMelodyPressed = false;
 		}
 
 		//scale selection
@@ -468,7 +493,7 @@ struct Proteus : Module {
 				params[SWITCH1_PARAM].setValue(0);
 			}
 		}
-
+		
 
 
 		//process new melody incoming trigger
@@ -516,6 +541,34 @@ struct Proteus : Module {
 			doStep();
 		}
 
+		//Expander
+		if (rightExpander.module && (rightExpander.module->model == modelProteusX )) {
+
+				//indicator lights up to say we found expander
+				lights[LEDX_LIGHT_RED].setBrightness(0); 
+				lights[LEDX_LIGHT_GREEN].setBrightness(0); 
+				lights[LEDX_LIGHT_BLUE].setBrightness(1); 
+
+				// //Incoming data from expander
+				proteusMessage *messagesFromExpander = (proteusMessage*)rightExpander.consumerMessage;
+				bool loadButtonPressed = messagesFromExpander[0].loadButtonPressed;
+				if (loadButtonPressed) {
+					INFO("PROTEUS RECEIVED MESSAGE THAT BUTTON WAS PRESSED");
+					for (int a =0; a < 32; ++a) {
+						sequence[a] = messagesFromExpander[0].sequence[a];
+					}
+					rightMessages[1][0].loadButtonPressed = false;
+
+				}
+				transposeValue = messagesFromExpander[0].transposeValue;
+				restValue = messagesFromExpander[0].restValue;
+
+		} else {
+			lights[LEDX_LIGHT_RED].setBrightness(0); //R
+			lights[LEDX_LIGHT_GREEN].setBrightness(0); //G
+			lights[LEDX_LIGHT_BLUE].setBrightness(0); //B
+		}
+
 	}
 
 	void updateRests() {
@@ -530,6 +583,24 @@ struct Proteus : Module {
 				sequence[restorder[x]].muted = false;
 			}
 		}
+	}
+
+	void transposeNote(Note* thenote, float transposeAmount) {
+		int semitone = thenote->toneNum;
+		semitone = semitone + transposeAmount;
+		int octave = thenote->octave;
+		if (semitone > 12) {
+			semitone = semitone -12;
+			octave = octave + 1;
+		}
+		if (semitone < 0) {
+			semitone = semitone + 12;
+			octave = octave -1;
+		}	
+		thenote->octave = octave;
+		thenote->toneNum = semitone;
+		thenote->setNoteNumMIDI();
+		thenote->setVoltage();
 	}
 
 	void doStep() {
@@ -576,19 +647,33 @@ struct Proteus : Module {
 		if (activeLED >= LIGHTS_LEN) {activeLED=0;}
 
 		Note noteToPlay = sequence[currentNote];
+		transposeNote(&noteToPlay,transposeValue);
 
-		//Play the current step's note
-		if (!noteToPlay.muted) {
-			//set the voltage
-			outputs[AUDIOOUT1_OUTPUT].setVoltage(noteToPlay.voltage);
+		if (restMode) {
+			
+			++restStep;
+			INFO("Resting %d",restStep);
 
-			//send a gate/trigger
-			pulseGen.trigger(gateDuration);
-			outputs[AUDIOOUT2_OUTPUT].setVoltage(GATE_HIGH_VOLTAGE);
+			if (restStep >= restValue) {
+				restMode = false;
+			}
+
+		} else {
+
+			//Play the current step's note
+			if (!noteToPlay.muted) {
+				//set the voltage
+				outputs[AUDIOOUT1_OUTPUT].setVoltage(noteToPlay.voltage);
+
+				//send a gate/trigger
+				pulseGen.trigger(gateDuration);
+				outputs[AUDIOOUT2_OUTPUT].setVoltage(GATE_HIGH_VOLTAGE);
+
+			}
+			
+			++currentNote;
 
 		}
-		
-		++currentNote;
 
 		//Deal with end of loop scenarios
 		if (currentNote >= sequenceLength) {
@@ -646,7 +731,29 @@ struct Proteus : Module {
 
 			currentNote = 0;
 			activeLED = 0;
+
+			if (restValue > 0) {
+				restStep = 0;
+				restMode = true;
+				INFO("ENTERING REST MODE resting for %.2f",restValue);
+			} else {
+				INFO("Restvalue is %.2f not resting",restValue);
+			}
 		}
+
+		//Expander
+		if (rightExpander.module && (rightExpander.module->model == modelProteusX )) {
+
+				//Outgoing data to send to expander
+				proteusMessage *messagesToExpander = (proteusMessage*)(rightExpander.module->leftExpander.producerMessage);
+				messagesToExpander[0].loadButtonPressed = (bool)newMelodyPressed;
+				for (int a = 0; a < 32; ++a) {
+					messagesToExpander[0].sequence[a] = sequence[a];
+					messagesToExpander[0].restorder[a] = restorder[a];
+				}
+					
+
+		} 
 
 	}
 
@@ -843,10 +950,10 @@ struct ProteusWidget : ModuleWidget {
 		setModule(module);
 		setPanel(createPanel(asset::plugin(pluginInstance, "res/Proteus.svg")));
 
-		addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-		addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+		addChild(createWidget<ScrewBlack>(Vec(RACK_GRID_WIDTH, 0)));
+		addChild(createWidget<ScrewBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+		addChild(createWidget<ScrewBlack>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+		addChild(createWidget<ScrewBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
 		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(7.325, 18.528)), module, Proteus::POT1_PARAM));
 		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(7.325, 39.499)), module, Proteus::POT2_PARAM));
@@ -874,6 +981,7 @@ struct ProteusWidget : ModuleWidget {
 		addChild(createLightCentered<MediumLight<RedGreenBlueLight>>(mm2px(Vec(23.6, 18.5)), module, Proteus::LED2_LIGHT_RED));
 		addChild(createLightCentered<MediumLight<RedGreenBlueLight>>(mm2px(Vec(28.6, 18.5)), module, Proteus::LED3_LIGHT_RED));
 		addChild(createLightCentered<MediumLight<RedGreenBlueLight>>(mm2px(Vec(33.6, 18.5)), module, Proteus::LED4_LIGHT_RED));
+		addChild(createLightCentered<SmallLight<RedGreenBlueLight>>(mm2px(Vec(48, 5)), module, Proteus::LEDX_LIGHT_RED));
 
 		addParam(createParamCentered<VCVButton>(mm2px(Vec(25.85, 66.40)), module, Proteus::BUTTON1_PARAM));
 

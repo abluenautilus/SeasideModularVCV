@@ -1,18 +1,19 @@
 # If RACK_DIR is not defined when calling the Makefile, default to two directories above
 RACK_DIR ?= ../..
+DAISYSP_DIR = inc/DaisySP
 
 # FLAGS will be passed to both the C and C++ compiler
 FLAGS +=
 CFLAGS += -O0
-CXXFLAGS += 
-
-# Careful about linking to shared libraries, since you can't assume much about the user's environment and library search path.
-# Static libraries are fine, but they should be added to this plugin's build system.
-LDFLAGS +=
+CXXFLAGS += -I$(DAISYSP_DIR)/Source
 
 # Add .cpp files to the build
 SOURCES += $(wildcard src/*.cpp)
 SOURCES += $(wildcard inc/*.cpp)
+
+SOURCES +=${wildcard inc/DaisySP/Source/**/*.cpp}
+SOURCES +=${wildcard inc/stk/src/*.cpp}
+
 
 # Add files to the ZIP package when running `make dist`
 # The compiled plugin and "plugin.json" are automatically added.
@@ -21,4 +22,6 @@ DISTRIBUTABLES += $(wildcard LICENSE*)
 DISTRIBUTABLES += $(wildcard presets)
 
 # Include the Rack plugin Makefile framework
+
 include $(RACK_DIR)/plugin.mk
+

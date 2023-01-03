@@ -12,10 +12,11 @@ make: -dumpmachine: Command not found
 make: -dumpmachine: Command not found
 
 make: -dumpmachine: Command not found
+
 ../../arch.mk:10: *** Could not determine CPU architecture of . Try hacking around in arch.mk.  Stop.
 
 
-# Make data base, printed on Thu Nov  3 23:48:45 2022
+# Make data base, printed on Tue Jan  3 00:53:30 2023
 
 # Variables
 
@@ -27,6 +28,8 @@ make: -dumpmachine: Command not found
 FSLREMOTECALL = 
 # automatic
 ?D = $(patsubst %/,%,$(dir $?))
+# environment
+PLATFORMIO_IDE = 2.5.5
 # automatic
 @D = $(patsubst %/,%,$(dir $@))
 # automatic
@@ -41,18 +44,18 @@ SHELL = /bin/sh
 VSCODE_NLS_CONFIG = {"locale":"en-us","availableLanguages":{},"_languagePackSupport":true}
 # environment
 _ = /usr/bin/make
-# makefile (from `Makefile', line 6)
+# makefile (from `Makefile', line 7)
 CFLAGS = -O0
 # environment
 FSLDIR = /usr/local/fsl
 # makefile (from `../../arch.mk', line 1)
 MAKEFILE_LIST :=  Makefile ../../plugin.mk ../../arch.mk
 # makefile (from `Makefile', line 15)
-SOURCES = $(wildcard src/*.cpp) $(wildcard inc/*.cpp)
-# makefile (from `Makefile', line 7)
-CXXFLAGS = 
+SOURCES = $(wildcard src/*.cpp) $(wildcard inc/*.cpp) ${wildcard inc/DaisySP/Source/**/*.cpp} ${wildcard inc/stk/src/*.cpp}
+# makefile (from `Makefile', line 8)
+CXXFLAGS = -I$(DAISYSP_DIR)/Source
 # makefile (from `../../plugin.mk', line 6)
-VERSION := 2.2
+VERSION := 2.2.1
 # environment
 __CFBundleIdentifier = com.microsoft.VSCode
 # environment
@@ -60,25 +63,27 @@ FSLOUTPUTTYPE = NIFTI_GZ
 # environment
 VSCODE_CWD = /
 # environment
-PATH = /Users/jonask/opt/anaconda3/bin:/Users/jonask/opt/anaconda3/condabin:/Users/jonas/bin:/Users/jonask/anaconda/bin:/usr/local/fsl/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin:/usr/local/MacGPG2/bin:/opt/X11/bin:/Library/Apple/usr/bin:/Users/jonask/bin:/Users/jonask/fMRI/moralframing/scripts:/usr/local/fsl/bin:/usr/local/mysql/bin:/Users/jonask/.composer/vendor/bin
+NO_PROXY = 127.0.0.1
 # environment
 LSCOLORS = excxdxdxgxdxdxbxdxdxex
 # makefile (from `../../plugin.mk', line 15)
 DISTRIBUTABLES = res $(wildcard LICENSE*) $(wildcard presets) plugin.json
+# makefile (from `Makefile', line 3)
+DAISYSP_DIR = inc/DaisySP
 # environment
 FSLMACHINELIST = 
 # environment
 ELECTRON_RUN_AS_NODE = 1
 # makefile (from `../../plugin.mk', line 22)
-LDFLAGS =  -shared -L$(RACK_DIR) -lRack
+LDFLAGS = -shared -L$(RACK_DIR) -lRack
 # default
 .FEATURES := target-specific order-only second-expansion else-if archives jobserver check-symlink
 # environment
-SSH_AUTH_SOCK = /private/tmp/com.apple.launchd.dNWsjKXVBs/Listeners
+SSH_AUTH_SOCK = /private/tmp/com.apple.launchd.k7XsduD71D/Listeners
 # automatic
 %F = $(notdir $%)
 # environment
-DISPLAY = /private/tmp/com.apple.launchd.mql8pXqWgr/org.xquartz:0
+DISPLAY = /private/tmp/com.apple.launchd.he6fR0zk2t/org.xquartz:0
 # environment
 CONDA_EXE = /Users/jonask/opt/anaconda3/bin/conda
 # environment
@@ -92,9 +97,10 @@ VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
 # environment
 HOME = /Users/jonask
 # default
+ 
 MAKEFILEPATH = $(shell /usr/bin/xcode-select -print-path 2>/dev/null || echo /Developer)/Makefiles
 # environment
-VSCODE_CODE_CACHE_PATH = /Users/jonask/Library/Application Support/Code/CachedData/d045a5eda657f4d7b676dedbfa7aab8207f8a075
+VSCODE_CODE_CACHE_PATH = /Users/jonask/Library/Application Support/Code/CachedData/e8a3071ea4344d9d48ef8a4df2c097372b0c5161
 # environment
 LOGNAME = jonask
 # environment
@@ -110,13 +116,17 @@ VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # environment
 CONDA_DEFAULT_ENV = base
 # environment
-XPC_FLAGS = 0x0
+PLATFORMIO_PATH = /Users/jonask/.platformio/python3/bin:/Users/jonask/opt/anaconda3/bin:/Users/jonask/opt/anaconda3/condabin:/Users/jonas/bin:/Users/jonask/anaconda/bin:/usr/local/fsl/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin:/usr/local/MacGPG2/bin:/opt/X11/bin:/Library/Apple/usr/bin:/Users/jonask/bin:/Users/jonask/fMRI/moralframing/scripts:/usr/local/fsl/bin:/usr/local/mysql/bin:/Users/jonask/.composer/vendor/bin
 # default
 MAKE = $(MAKE_COMMAND)
 # environment
 FSLGECUDAQ = cuda.q
 # environment
+PATH = /Users/jonask/opt/anaconda3/bin:/Users/jonask/opt/anaconda3/condabin:/Users/jonas/bin:/Users/jonask/anaconda/bin:/usr/local/fsl/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin:/usr/local/MacGPG2/bin:/opt/X11/bin:/Library/Apple/usr/bin:/Users/jonask/bin:/Users/jonask/fMRI/moralframing/scripts:/usr/local/fsl/bin:/usr/local/mysql/bin:/Users/jonask/.composer/vendor/bin
+# environment
 SHLVL = 1
+# environment
+XPC_FLAGS = 0x0
 # default
 MAKE_VERSION := 3.81
 # environment
@@ -138,11 +148,13 @@ TMPDIR = /var/folders/0q/sbsy1b4j0g95g3j3ztxp7pdw0000gn/T/
 # automatic
 *F = $(notdir $*)
 # environment
-VSCODE_IPC_HOOK = /Users/jonask/Library/Application Support/Code/1.72.2-main.sock
+VSCODE_IPC_HOOK = /Users/jonask/Library/Application Support/Code/1.74.2-main.sock
 # environment
 FSLLOCKDIR = 
 # environment
 MallocNanoZone = 0
+# environment
+DISCORD_TOKEN = MTA0NTExNTYyMjg4MDcyMzA0Ng.GxwTps.3HfQwyjFZjvV2OzAKpUGlzgrM2VkWUXbEmlapM
 # makefile
 MAKEFLAGS = Rrqp
 # environment
@@ -150,7 +162,7 @@ MFLAGS = -Rrqp
 # automatic
 *D = $(patsubst %/,%,$(dir $*))
 # environment
-XPC_SERVICE_NAME = application.com.microsoft.VSCode.163129504.163129510
+XPC_SERVICE_NAME = application.com.microsoft.VSCode.185639195.185639201
 # automatic
 +D = $(patsubst %/,%,$(dir $+))
 # automatic
@@ -165,6 +177,8 @@ MAKEFILES :=
 FSLTCLSH = /usr/local/fsl/bin/fsltclsh
 # automatic
 <F = $(notdir $<)
+# environment
+PLATFORMIO_CALLER = vscode
 # environment
 LC_ALL = C
 # environment
@@ -190,23 +204,24 @@ CLICOLOR = 1
 # environment
 CONDA_PREFIX = /Users/jonask/opt/anaconda3
 # environment
-VSCODE_PID = 15770
+VSCODE_PID = 33144
 # environment
 _CE_CONDA = 
 # environment
 LANG = C
 # variable set hash-table stats:
-# Load=88/1024=9%, Rehash=0, Collisions=4/150=3%
+# Load=94/1024=9%, Rehash=0, Collisions=6/158=4%
 
 # Pattern-specific Variable Values
 
 # No pattern-specific variable values.
 
 # Directories
+ 
 
-# . (device 16777221, inode 153048404): 19 files, no impossibilities.
+# . (device 16777223, inode 153048404): 18 files, no impossibilities.
 
-# 19 files, no impossibilities in 1 directories.
+# 18 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -264,6 +279,6 @@ Makefile:
 # strcache size: total = 4096 / max = 4096 / min = 4096 / avg = 4096
 # strcache free: total = 4057 / max = 4057 / min = 4057 / avg = 4057
 
-# Finished Make data base on Thu Nov  3 23:48:45 2022
+# Finished Make data base on Tue Jan  3 00:53:30 2023
 
  

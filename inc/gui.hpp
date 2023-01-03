@@ -12,3 +12,14 @@ struct scaleKnob : ParamQuantity {
 
 
 };
+
+struct IndianNoteKnob : ParamQuantity {
+
+    std::string getDisplayValueString() override {
+
+        return saReGaMa.at(getValue());
+
+    }
+
+
+};

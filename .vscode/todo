@@ -2,3 +2,16 @@
 Don't let gate lengths go long after a long stop. Skip first input?
 Maybe have NewMelody wait until the end of a loop
 Add more scales
+
+
+EXPANDER:
+----
+Save overwrite protection? 
+Lights need to be more meaningful
+Persistence on restart 
+
+Transposition
+Next/Prev melody
+Rand Melody
+
+Rest notes in between

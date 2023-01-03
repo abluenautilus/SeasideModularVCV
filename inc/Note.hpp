@@ -16,6 +16,7 @@ class Note {
         uint8_t noteNumMIDI;
         uint8_t toneNum;
         bool muted;
+        float frequency;
 
         std::map<std::string,int> noteToNum;
         std::map<int,std::string> numToNote;
@@ -28,6 +29,7 @@ class Note {
             noteName = numToNote[toneNum];
             octave = noteNumMIDI / SEMITONES_PER_OCTAVE -1;
             setVoltage();
+            setFreq();
         }
 
         //Create a note with a string and octave number
@@ -38,6 +40,7 @@ class Note {
             toneNum = noteToNum[noteName];
             noteNumMIDI = 12*(octave+1)+(toneNum-1);
             setVoltage();
+            setFreq();
         }
 
         //Create a rest note
@@ -57,6 +60,7 @@ class Note {
             noteName = "C4";
             noteNumMIDI = 60;
             setVoltage();
+            setFreq();
         }
         
         std::string getNoteNameFromNum(int theNoteNum) {
@@ -70,6 +74,18 @@ class Note {
             return noteToNum[theNoteName];
 
         }
+
+        // Set a note with a string and octave number
+        void setNote(std::string myNote, int myOctave) {
+            makeNoteMap();
+            noteName = myNote;
+            octave = myOctave;
+            toneNum = noteToNum[noteName];
+            noteNumMIDI = 12*(octave+1)+(toneNum-1);
+            setVoltage();
+            setFreq();
+        }
+
         //Create maps to map back and forth between note names and nums
         void makeNoteMap() {
 
@@ -112,6 +128,10 @@ class Note {
         
         void setNoteNumMIDI() {
             noteNumMIDI = 12*(octave+1)+(toneNum-1);
+        }
+
+        void setFreq() {
+            frequency = (440 / 32) * pow(2, ((noteNumMIDI - 9) / 12.0));
         }
 
 };

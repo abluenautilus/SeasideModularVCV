@@ -4,7 +4,8 @@
             "name": "Mac",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/Users/jonask/Music/VCVRack/Rack/include"
+                "/Users/jonask/Music/VCVRack/Rack/include",
+                "${workspaceFolder}/inc/DaisySP/Source/**"
             ],
             "defines": [],
             "macFrameworkPath": [],
