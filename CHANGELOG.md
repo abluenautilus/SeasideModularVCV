@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.3.0 - 3 Jan 2023
+
+• Proteus has been updated to work with the expander module ProteusX
+
+• Scales have been updated and now include a scale based on the Indian raga Bhairavi
+
+• New module Jawari, a tanpura simulator
+
 ## v2.2.0 - 18 Oct 2022
 
 • Density now affects the overall proportion of notes in the sequence that are present instead of a probability applied to each note individually. This means that if Density is set to 50%, you will always have exactly 50% of the notes present. This also solves the problem of sequences with low Density ending up empty. There will always be at least one note on in the sequence. 
