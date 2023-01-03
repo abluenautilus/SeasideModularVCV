@@ -87,7 +87,7 @@ struct Jawari : Module {
         paramQuantities[POT2_PARAM]->snapEnabled = true;
         configParam(POT3_PARAM, -1, 2, 0.0, "octave");
         paramQuantities[POT3_PARAM]->snapEnabled = true;
-        configParam<IndianNoteKnob>(POT4_PARAM, 1, 11, 7, "string 1");
+        configParam<IndianNoteKnob>(POT4_PARAM, 1, 12, 7, "string 1");
         paramQuantities[POT4_PARAM]->snapEnabled = true;
 
         configInput(JAWARI_INPUT, "Jawari");
