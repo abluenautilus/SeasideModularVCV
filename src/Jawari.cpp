@@ -2,7 +2,6 @@
 #include "../inc/DaisySP/Source/daisysp.h"
 #include "../inc/Note.hpp"
 #include "../inc/Scales.hpp"
-#include "../inc/formantfilter.hpp"
 #include "../inc/gui.hpp"
 
 using namespace daisysp;
@@ -60,9 +59,6 @@ struct Jawari : Module {
     float wah_amount = 0.85;
     float jawari = 0.0f;
 
-    //Filters
-    FormantFilter formant_filters[NUM_STRINGS];
-
     dsp::SchmittTrigger buttonTrig;
     dsp::SchmittTrigger clockTrig;
     bool clockState, prevClockState;
@@ -71,7 +67,6 @@ struct Jawari : Module {
     float string_mix = 0.3;
     float comb_mix= 0.2;
     float wah_mix = 0.2;
-    float formant_mix = 0.3;
 
     //Tuning
     int semiOffset, octaveOffset, string1Offset = 0;
@@ -117,8 +112,6 @@ struct Jawari : Module {
             wahs[i].Init(sampleRate);
             wahs[i].SetWah(wah_amount);
             wahs[i].SetDryWet(.999);
-
-            formant_filters[i].Init(sampleRate,0,2,4);
      
         };
 
@@ -129,14 +122,6 @@ struct Jawari : Module {
     }
 
 
-    json_t *dataToJson() override {
-        json_t *root = json_object();
-        return root;
-    }
-
-    void dataFromJson(json_t* root) override {
-    }
-
     void doStep() {
 
         current_note = current_note + 1;
@@ -146,8 +131,6 @@ struct Jawari : Module {
 
         string_trig[current_note] = 1.0f;
 
-        formant_filters[current_note].Reset();
-
     }
 
 	void process(const ProcessArgs& args) override {
@@ -156,7 +139,6 @@ struct Jawari : Module {
     
         comb_mix = jawari/2;
         wah_amount = jawari/2 + .4999;
-        formant_mix = 0;
         string_mix = 1- jawari;
         
         lights[JAWARI_LED].setBrightness(jawari);
@@ -193,7 +175,6 @@ struct Jawari : Module {
         // Process button press
 		if (buttonTrig.process(params[BUTTON1_PARAM].getValue())) {
             INFO("Trigger!");
-            formant_filters[current_note].Reset();
             doStep();
 		};
 
@@ -209,8 +190,6 @@ struct Jawari : Module {
         
         float currentVoltage = 0;
         for (int i = 0; i < NUM_STRINGS; ++i ) {
-            formant_filters[i].SetDuration(params[POT4_PARAM].getValue());
-            formant_filters[i].SetDrive(params[POT3_PARAM].getValue());
 
             float stringVoltage = strings[i].Process(string_trig[i]);
             float stringWeighted = stringVoltage * string_weight;
@@ -223,24 +202,20 @@ struct Jawari : Module {
             float wahVoltage = wahs[i].Process(stringVoltage);
             float wahWeighted = wahVoltage * string_weight;
 
-            float formantWeighted = formant_filters[i].Process(stringVoltage) * string_weight;
-
-            float mix = (stringWeighted * string_mix) + (wahWeighted * (1-comb_mix)) + (combWeighted * comb_mix) + (formantWeighted * formant_mix);
+            float mix = (stringWeighted * string_mix) + (wahWeighted * (1-comb_mix)) + (combWeighted * comb_mix);
             
             currentVoltage += mix;
         };
-        
-        float l_sig;
-
-        l_sig = currentVoltage;
-
     
-        outputs[AUDIOOUT1_OUTPUT].setVoltage(l_sig);
+        //jawari makes things louder, so we balance for that
+        float sig;
+        sig = (1.5-jawari*0.5) * currentVoltage;
+
+        outputs[AUDIOOUT1_OUTPUT].setVoltage(sig);
 
         string_trig[current_note] = 0.0f;
 
     }
-
 
 };
 
