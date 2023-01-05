@@ -1,7 +1,7 @@
 /build
-/plugin.so
-/plugin.dylib
-/plugin.dll
 /.vscode/targets.log
+/.vscode/dryrun.log
+/.vscode/configurationCache.log
+/plugin.dylib
 .DS_Store
 todo
