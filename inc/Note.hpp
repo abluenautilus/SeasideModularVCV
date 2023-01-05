@@ -131,7 +131,7 @@ class Note {
         }
 
         void setFreq() {
-            frequency = (440 / 32) * pow(2, ((noteNumMIDI - 9) / 12.0));
+            frequency = 440 * pow(2, ((noteNumMIDI - 69) / 12.0));
         }
 
 };

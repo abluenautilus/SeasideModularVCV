@@ -156,7 +156,7 @@ struct Jawari : Module {
 
                 int semi,octave = 0;
                 if (i == 0 ) {
-                    semi = string1Offset;
+                    semi = string1Offset + semiOffset;
                 } else {
                     semi = notes_orig[i].toneNum + semiOffset;
                 }
