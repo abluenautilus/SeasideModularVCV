@@ -4,7 +4,7 @@ DAISYSP_DIR = inc/DaisySP
 
 # FLAGS will be passed to both the C and C++ compiler
 FLAGS +=
-CFLAGS += -O0
+# CFLAGS += -O0
 CXXFLAGS += -I$(DAISYSP_DIR)/Source
 
 # Add .cpp files to the build

@@ -70,6 +70,7 @@ struct Jawari : Module {
 
     //Tuning
     int semiOffset, octaveOffset, string1Offset = 0;
+    int semiOffsetPrev, octaveOffsetPrev, string1OffsetPrev = 0;
 
     bool reverb_on = false;
 
@@ -148,29 +149,38 @@ struct Jawari : Module {
         octaveOffset = params[POT3_PARAM].getValue();
         string1Offset = params[POT4_PARAM].getValue();
 
-        for (int i = 0; i < 4; ++i) {
+        // We only calculate new frequency if values have changed to limit CPU
+        if (semiOffset != semiOffsetPrev || octaveOffset != octaveOffsetPrev || string1Offset != string1OffsetPrev) {
 
-            int semi,octave = 0;
-            if (i == 0 ) {
-                semi = string1Offset;
-            } else {
-                semi = notes_orig[i].toneNum + semiOffset;
+            for (int i = 0; i < 4; ++i) {
+
+                int semi,octave = 0;
+                if (i == 0 ) {
+                    semi = string1Offset;
+                } else {
+                    semi = notes_orig[i].toneNum + semiOffset;
+                }
+                octave = notes_orig[i].octave + octaveOffset;
+
+                if (semi > 12) {
+                    octave++;
+                    semi = semi - 12;
+                } else if (semi < 0) {
+                    octave--;
+                    semi = 12-semi;
+                }
+
+                notes[i].setNote(notes[i].numToNote[semi],octave);
+
+                strings[i].SetFreq(notes[i].frequency);
+                combs[i].SetFreq(notes[i].frequency);
             }
-            octave = notes_orig[i].octave + octaveOffset;
-
-            if (semi > 12) {
-                octave++;
-                semi = semi - 12;
-            } else if (semi < 0) {
-                octave--;
-                semi = 12-semi;
-            }
-
-            notes[i].setNote(notes[i].numToNote[semi],octave);
-
-            strings[i].SetFreq(notes[i].frequency);
-            combs[i].SetFreq(notes[i].frequency);
         }
+
+        semiOffsetPrev = semiOffset;
+        octaveOffsetPrev = octaveOffset;
+        string1OffsetPrev = string1Offset;
+
 
         // Process button press
 		if (buttonTrig.process(params[BUTTON1_PARAM].getValue())) {
@@ -205,6 +215,7 @@ struct Jawari : Module {
             float mix = (stringWeighted * string_mix) + (wahWeighted * (1-comb_mix)) + (combWeighted * comb_mix);
             
             currentVoltage += mix;
+     
         };
     
         //jawari makes things louder, so we balance for that
