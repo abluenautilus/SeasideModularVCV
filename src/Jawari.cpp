@@ -92,6 +92,14 @@ struct Jawari : Module {
 
         configOutput(AUDIOOUT1_OUTPUT, "Out");
 
+        // Make sure buffers are clear
+        for (int i = 0; i < 1000; ++i) {
+            for (int n = 0; n < NUM_STRINGS; n++) {
+                string_buffer[n][i] = 0.0f;
+                comb_buffer[n][i] = 0.0f;
+            }
+        }
+
         // Default tuning
         notes[0].setNote("G",2); notes_orig[0].setNote("G",2);
         notes[1].setNote("C",3); notes_orig[1].setNote("C",3);
@@ -175,12 +183,14 @@ struct Jawari : Module {
                 strings[i].SetFreq(notes[i].frequency);
                 combs[i].SetFreq(notes[i].frequency);
             }
+
+            semiOffsetPrev = semiOffset;
+            octaveOffsetPrev = octaveOffset;
+            string1OffsetPrev = string1Offset;
+
         }
 
-        semiOffsetPrev = semiOffset;
-        octaveOffsetPrev = octaveOffset;
-        string1OffsetPrev = string1Offset;
-
+    
 
         // Process button press
 		if (buttonTrig.process(params[BUTTON1_PARAM].getValue())) {
@@ -220,7 +230,9 @@ struct Jawari : Module {
     
         //jawari makes things louder, so we balance for that
         float sig;
-        sig = (1.5-jawari*0.5) * currentVoltage;
+        float compensationFactor = 1.7;
+        sig = (compensationFactor - (compensationFactor - 1)*jawari) * currentVoltage;
+
 
         outputs[AUDIOOUT1_OUTPUT].setVoltage(sig);
 
