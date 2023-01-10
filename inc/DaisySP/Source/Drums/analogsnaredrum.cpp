@@ -5,7 +5,7 @@
 
 using namespace daisysp;
 
-static const int kNumModes = 5;
+// static const int kNumModes = 5;
 
 void AnalogSnareDrum::Init(float sample_rate)
 {

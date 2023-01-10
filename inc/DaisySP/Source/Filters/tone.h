@@ -42,7 +42,7 @@ class Tone
 
   private:
     void  CalculateCoefficients();
-    float out_, prevout_, in_, freq_, c1_, c2_, sample_rate_;
+    float prevout_, freq_, c1_, c2_, sample_rate_;
 };
 } // namespace daisysp
 #endif

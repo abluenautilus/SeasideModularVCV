@@ -71,7 +71,7 @@ class NlFilt
   private:
     int32_t Set();
 
-    float   in_, a_, b_, d_, C_, L_;
+    float   a_, b_, d_, C_, L_;
     float   delay_[DSY_NLFILT_MAX_DELAY];
     int32_t point_;
 };

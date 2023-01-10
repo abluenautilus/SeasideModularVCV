@@ -6,14 +6,14 @@ using namespace daisysp;
 
 void Biquad::Reset()
 {
-    float con   = cutoff_ * two_pi_d_sr_;
-    float alpha = 1.0f - 2.0f * res_ * cosf(con) * cosf(con)
-                  + res_ * res_ * cosf(2 * con);
-    float beta  = 1.0f + cosf(con);
-    float gamma = 1 + cosf(con);
-    float m1    = alpha * gamma + beta * sinf(con);
-    float m2    = alpha * gamma - beta * sinf(con);
-    float den   = sqrtf(m1 * m1 + m2 * m2);
+    //float con   = cutoff_ * two_pi_d_sr_;
+    // float alpha = 1.0f - 2.0f * res_ * cosf(con) * cosf(con)
+    //               + res_ * res_ * cosf(2 * con);
+    // float beta  = 1.0f + cosf(con);
+    // float gamma = 1 + cosf(con);
+    // float m1    = alpha * gamma + beta * sinf(con);
+    // float m2    = alpha * gamma - beta * sinf(con);
+    // float den   = sqrtf(m1 * m1 + m2 * m2);
 
     // b0_ = 1.5f * (alpha * alpha + beta * beta) / den;
     // b1_ = b0_;
