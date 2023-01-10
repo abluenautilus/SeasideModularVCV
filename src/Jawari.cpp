@@ -228,7 +228,7 @@ struct Jawari : Module {
      
         };
     
-        //jawari makes things louder, so we balance for that
+        // open jawari makes things louder, so we balance for that
         float sig;
         float compensationFactor = 1.7;
         sig = (compensationFactor - (compensationFactor - 1)*jawari) * currentVoltage;
