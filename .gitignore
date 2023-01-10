@@ -3,5 +3,6 @@
 /.vscode/dryrun.log
 /.vscode/configurationCache.log
 /plugin.dylib
+/plugin.dll
 .DS_Store
 todo
