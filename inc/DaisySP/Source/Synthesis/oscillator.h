@@ -69,7 +69,7 @@ class Oscillator
     */
     inline void SetWaveform(const uint8_t wf)
     {
-        waveform_ = wf < WAVE_LAST ? wf : WAVE_SIN;
+        waveform_ = wf < (int)WAVE_LAST ? wf : (int)WAVE_SIN;
     }
 
     /** Returns true if cycle is at end of rise. Set during call to Process.
