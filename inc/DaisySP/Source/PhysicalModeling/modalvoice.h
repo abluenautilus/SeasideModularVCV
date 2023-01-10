@@ -78,7 +78,7 @@ class ModalVoice
     float sample_rate_;
 
     bool  sustain_, trig_;
-    float f0_, structure_, brightness_, damping_;
+    float f0_, brightness_, damping_;
     float density_, accent_;
     float aux_;
 

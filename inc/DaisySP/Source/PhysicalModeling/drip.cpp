@@ -134,7 +134,7 @@ float Drip::Process(bool trig)
     float sndLevel    = snd_level_;
     float num_objects = num_objects_;
     float soundDecay  = sound_decay_;
-    float inputs0, inputs1, inputs2;
+    float inputs0;
 
     shakeEnergy *= systemDecay; /* Exponential system decay */
 
@@ -182,21 +182,21 @@ float Drip::Process(bool trig)
     sndLevel *= soundDecay;
     inputs0 = sndLevel;
     inputs0 *= noise_tick();
-    inputs1 = inputs0 * gains1_;
-    inputs2 = inputs0 * gains2_;
+    inputs1_ = inputs0 * gains1_;
+    inputs2_ = inputs0 * gains2_;
     inputs0 *= gains0_;
     inputs0 -= outputs00_ * coeffs00_;
     inputs0 -= outputs01_ * coeffs01_;
     outputs01_ = outputs00_;
     outputs00_ = inputs0;
     data       = gains0_ * outputs00_;
-    inputs1 -= outputs10_ * coeffs10_;
-    inputs1 -= outputs11_ * coeffs11_;
+    inputs1_ -= outputs10_ * coeffs10_;
+    inputs1_ -= outputs11_ * coeffs11_;
     outputs11_ = outputs10_;
     outputs10_ = inputs1_;
     data += gains1_ * outputs10_;
-    inputs2 -= outputs20_ * coeffs20_;
-    inputs2 -= outputs21_ * coeffs21_;
+    inputs2_ -= outputs20_ * coeffs20_;
+    inputs2_ -= outputs21_ * coeffs21_;
     outputs21_ = outputs20_;
     outputs20_ = inputs2_;
     data += gains2_ * outputs20_;
