@@ -9,9 +9,9 @@ using namespace daisysp;
 
 #define NUM_STRINGS 4
 
-// // Some parameters are tuned based on 11.025 kHz then scaled accordingly
+// // Some parameters are tuned based on 48kHz then scaled accordingly
 static const float base_sample_rate = 48000;
-static const int base_npt = 1500; // buffer size at 11.025kHz
+static const int base_npt = 1500; // buffer size at 48kHz
 static const int max_npt = 10000; // max buffer size
 
 struct Jawari : Module {
