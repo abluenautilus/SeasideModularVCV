@@ -89,7 +89,7 @@ struct Jawari : Module {
         paramQuantities[SEMI_PARAM]->snapEnabled = true;
         configParam(OCTAVE_PARAM, 0.0, 2, 0.0, "transpose"," octaves");
         paramQuantities[OCTAVE_PARAM]->snapEnabled = true;
-        configParam<IndianNoteKnob>(TUNING_PARAM, 1, 12, 7, "tuning (first string)");
+        configParam<IndianNoteKnob>(TUNING_PARAM, 1, 12, 8, "tuning (first string)");
         paramQuantities[TUNING_PARAM]->snapEnabled = true;
 
         configInput(JAWARI_INPUT, "Bridge shape");
