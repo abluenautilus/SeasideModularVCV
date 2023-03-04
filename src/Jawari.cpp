@@ -156,8 +156,6 @@ struct Jawari : Module {
         float srRatio = sampleRate/base_sample_rate;
         int npts = clamp(static_cast<int>(base_npt * srRatio),0,max_npt);
 
-        INFO("Sample rate: %.2f srRatio: %.2f npts: %d",sampleRate,srRatio,npts);
-
         // Empty buffers
         for (int i = 0; i < max_npt; ++i) {
             for (int n = 0; n < NUM_STRINGS; n++) {
