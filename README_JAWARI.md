@@ -1,4 +1,4 @@
-## Jawari Module v2.3.0
+## Jawari Module v2.4.0
 
 Jawari is a simulation of the tanpura, an Indian drone instrument. The tanpura typically has four strings, which are tuned to produce a consistent drone when plucked in order repeatedly. It is not a melodic instrument. 
 
@@ -8,12 +8,14 @@ The jawari of the instrument can be adjusted with the main slider, open at the t
 
 ***Tuning***
 
-The most common tuning of the tanpura is Pa, Sa, Sa Sa, in the indian system, which corresponds to G, C, C, C in the key of C. The first note is usually tuned differently to match the raga which it accompanies. You can change the tuning of the first string using the "STRING 1" knob. 
+The most common tuning of the tanpura is Pa, Sa, Sa Sa, in the Indian system, which corresponds to G, C, C, C in the key of C. The first note is usually tuned differently to match the raga which it accompanies. You can change the tuning of the first string using the "1st STRING TUNING" knob. 
 
 The other strings will always be tuned to octaves of the root note (Sa). This root note can be transposed by semitone or by octave using the corresponding knobs. 
 
 ***Plucking the strings***
 
-You can pluck the strings in order manually by pressing the button at the top of the module. 
+You can pluck the strings in order manually by pressing the button under the STRUM jack. 
 
-More typically, you will use a clock input to strum the strings. The tanpura sounds best when strummed slowly. A tempo around 60 BPM is a good place to start. 
+More typically, you will use a clock input to STRUM the strings. The tanpura sounds best when strummed slowly. A tempo around 60 BPM is a good place to start. 
+
+Sending a trigger into RESET will poise Jawari to strike the first string when the next STRUM comes in. 
