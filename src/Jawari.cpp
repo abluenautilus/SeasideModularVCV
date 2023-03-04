@@ -177,10 +177,9 @@ struct Jawari : Module {
 	void process(const ProcessArgs& args) override {
 
         jawari = clamp(params[JAWARI_PARAM].getValue() + inputs[JAWARI_INPUT].getVoltage(),0.0f,1.0f);
-    
-        string_mix = 5;
-        comb_mix = jawari;
-        // string_mix = 1 - jawari;
+
+        comb_mix = jawari * 2.5;
+        string_mix = 2.5 - comb_mix;
         
         lights[JAWARI_LED].setBrightness(jawari);
 
@@ -226,7 +225,6 @@ struct Jawari : Module {
             doStep();
 		}
 
-
 		// Detect incoming clock
 		float currentClockTrig = inputs[CLOCK_INPUT].getVoltage();
 		clockTrig.process(rescale(currentClockTrig, 0.1f, 2.0f, 0.f, 1.f));
@@ -236,10 +234,8 @@ struct Jawari : Module {
             doStep();
         }
 
-
-         float currentVoltage = 0;
+        float currentVoltage = 0;
   
-       
         for (int i = 0; i < NUM_STRINGS; ++i ) {
 
             float stringVoltage = strings[i].Process(string_trig[i]);
@@ -257,7 +253,7 @@ struct Jawari : Module {
 
         //jawari makes things louder, so we balance for that
         float sig;
-        float compensationFactor = 1.7;
+        float compensationFactor = 4;
         sig = (compensationFactor - (compensationFactor - 1)*jawari) * currentVoltage;
 
         sig = dcblocker.Process(sig);
