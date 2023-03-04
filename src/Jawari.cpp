@@ -9,9 +9,9 @@ using namespace daisysp;
 
 #define NUM_STRINGS 4
 
-// // Some parameters are tuned based on 48KHz then scaled accordingly
+// // Some parameters are tuned based on 11.025 kHz then scaled accordingly
 static const float base_sample_rate = 48000;
-static const int base_npt = 1500; // buffer size at 48KHz
+static const int base_npt = 1500; // buffer size at 11.025kHz
 static const int max_npt = 10000; // max buffer size
 
 struct Jawari : Module {
@@ -117,7 +117,7 @@ struct Jawari : Module {
         notes[3].setNote("C",2); notes_orig[3].setNote("C",2);
 
         float srRatio = sampleRate/base_sample_rate;
-        string_npt = clamp(base_npt * (int)srRatio,0,max_npt);
+        string_npt = clamp(static_cast<int>(base_npt * srRatio),0,max_npt);
         comb_npt = string_npt;
 
         // Initialize oscillators
@@ -152,8 +152,11 @@ struct Jawari : Module {
     void onSampleRateChange(const SampleRateChangeEvent& e) override {
 
         // compare to base freq
+        sampleRate = e.sampleRate;
         float srRatio = sampleRate/base_sample_rate;
-        int npts = clamp(base_npt * (int)srRatio,0,max_npt);
+        int npts = clamp(static_cast<int>(base_npt * srRatio),0,max_npt);
+
+        INFO("Sample rate: %.2f srRatio: %.2f npts: %d",sampleRate,srRatio,npts);
 
         // Empty buffers
         for (int i = 0; i < max_npt; ++i) {
