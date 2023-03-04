@@ -22,6 +22,7 @@ struct Jawari : Module {
         OCTAVE_PARAM,
         TUNING_PARAM,
         STRUMBUTTON_PARAM,
+        RESETBUTTON_PARAM,
 		PARAMS_LEN
 	};
 	enum InputId {
@@ -65,6 +66,7 @@ struct Jawari : Module {
     DcBlock dcblocker;
 
     dsp::SchmittTrigger buttonTrig;
+    dsp::SchmittTrigger resetbuttonTrig;
     dsp::SchmittTrigger clockTrig;
     dsp::SchmittTrigger resetTrig;
     bool clockState, prevClockState;
@@ -95,6 +97,7 @@ struct Jawari : Module {
         configInput(RESET_INPUT, "Reset");
 
         configParam(STRUMBUTTON_PARAM, 0.f, 1.f, 0.f, "Strum");
+        configParam(RESETBUTTON_PARAM, 0.f, 1.f, 0.f, "Reset");
         configOutput(AUDIOOUT1_OUTPUT, "Out");
 
         // Make sure buffers are clear
@@ -223,6 +226,7 @@ struct Jawari : Module {
             doStep();
 		}
 
+
 		// Detect incoming clock
 		float currentClockTrig = inputs[CLOCK_INPUT].getVoltage();
 		clockTrig.process(rescale(currentClockTrig, 0.1f, 2.0f, 0.f, 1.f));
@@ -232,14 +236,6 @@ struct Jawari : Module {
             doStep();
         }
 
-        // Detect reset
-		float currentResetTrig = inputs[RESET_INPUT].getVoltage();
-		resetTrig.process(rescale(currentResetTrig, 0.1f, 2.0f, 0.f, 1.f));
-		prevResetState = resetState;
-		resetState = resetTrig.isHigh();
-        if (!prevResetState && resetState) {
-            current_note = -1;
-        }
 
          float currentVoltage = 0;
   
@@ -268,6 +264,20 @@ struct Jawari : Module {
 
         outputs[AUDIOOUT1_OUTPUT].setVoltage(sig);
         string_trig[current_note] = 0.0f;
+
+        // Detect reset
+		float currentResetTrig = inputs[RESET_INPUT].getVoltage();
+		resetTrig.process(rescale(currentResetTrig, 0.1f, 2.0f, 0.f, 1.f));
+		prevResetState = resetState;
+		resetState = resetTrig.isHigh();
+        if (!prevResetState && resetState) {
+            current_note = -1;
+        }
+        if (resetbuttonTrig.process(params[RESETBUTTON_PARAM].getValue())) {
+            current_note = -1;
+		}
+
+
     }
 };
 
@@ -289,6 +299,7 @@ struct JawariWidget : ModuleWidget {
         addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(42, 88)), module, Jawari::TUNING_PARAM));
 
         addParam(createParamCentered<VCVButton>(mm2px(Vec(25.4, 113)), module, Jawari::STRUMBUTTON_PARAM));
+        addParam(createParamCentered<VCVButton>(mm2px(Vec(9, 113)), module, Jawari::RESETBUTTON_PARAM));
 
         addInput(createInputCentered<PJ301MPort>(mm2px(Vec(25.4, 67)), module, Jawari::JAWARI_INPUT));
         addInput(createInputCentered<PJ301MPort>(mm2px(Vec(25.4, 105)), module, Jawari::CLOCK_INPUT));

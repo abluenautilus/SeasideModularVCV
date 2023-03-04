@@ -18,4 +18,4 @@ You can pluck the strings in order manually by pressing the button under the STR
 
 More typically, you will use a clock input to STRUM the strings. The tanpura sounds best when strummed slowly. A tempo around 60 BPM is a good place to start. 
 
-Sending a trigger into RESET will poise Jawari to strike the first string when the next STRUM comes in. 
+Sending a trigger into RESET or pressing the RESET button will poise Jawari to strike the first string when the next STRUM comes in. 
