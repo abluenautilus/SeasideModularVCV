@@ -1,7 +1,7 @@
 {
   "slug": "SeasideModular",
   "name": "Seaside Modular",
-  "version": "2.3",
+  "version": "2.4",
   "license": "MIT",
   "brand": "Seaside Modular",
   "author": "Blue Nautilus",
@@ -24,8 +24,8 @@
       "slug": "Jawari",
       "name": "Jawari",
       "description": "Jawari is a synthesized version of the tanpura, the Indian drone instrument",
-      "tags": ["Drone"],
-      "keywords":["Drone"]
+      "tags": ["Physical Modeling","Synth"],
+      "keywords":["Drone","Tanpura"]
     },
     {
       "slug": "ProteusX",

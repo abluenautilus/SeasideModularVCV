@@ -44,6 +44,7 @@ class Pluck
     */
     void Init(float sample_rate, float *buf, int32_t npt, int32_t mode);
 
+    void setSampleRate(float sample_rate, int npts);
 
     /** Processes the waveform to be generated, returning one sample. This should be called once per sample period.
     */

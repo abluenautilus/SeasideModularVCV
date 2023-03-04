@@ -31,6 +31,7 @@ class Comb
     */
     float Process(float in);
 
+    void setSampleRate(float sample_rate, int npts);
 
     /** Sets the period of the comb filter in seconds
     */

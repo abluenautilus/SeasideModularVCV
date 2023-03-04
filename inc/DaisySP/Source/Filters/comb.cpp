@@ -48,6 +48,17 @@ float Comb::Process(float in)
     return outsamp;
 }
 
+void Comb::setSampleRate(float sample_rate, int npts) {
+
+    sample_rate_ = sample_rate;
+    max_size_ = npts;
+    max_loop_time_ = ((float)max_size_ / sample_rate_) - .01;
+    loop_time_     = max_loop_time_;
+    mod_           = sample_rate_ * loop_time_;
+    buf_pos_       = 0;
+
+}
+
 void Comb::SetPeriod(float looptime)
 {
     if(looptime > 0)

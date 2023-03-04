@@ -44,6 +44,13 @@ void Pluck::Init(float sample_rate, float *buf, int32_t npts, int32_t mode)
     init_  = 1;
 }
 
+void Pluck::setSampleRate(float sample_rate, int npts) {
+    sample_rate_ = sample_rate;
+    npts_ = npts;
+    sicps_ = (npts_ * 256.0f + 128.0f) * (1.0f / sample_rate_);
+    //Reinit();
+}
+
 float Pluck::Process(float &trig)
 {
     float * fp, out;
