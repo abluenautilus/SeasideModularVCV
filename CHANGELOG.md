@@ -4,7 +4,10 @@
 
 • Jawari has been redesigned and uses significantly less CPU
 
-• Jawari now has a reset input
+• Jawari now has a reset inputhint: You have divergent branches and need to specify how to reconcile them.
+hint: You can do so by running one of the following commands sometime before
+hint: your next pull:
+
 
 ## v2.3.0 - 3 Jan 2023
 
