@@ -1,10 +1,14 @@
 # Changelog
 
+## v.2.4.0 - March 2023
+
+• Jawari has been redesigned and uses significantly less CPU
+
+• Jawari now has a reset input
+
 ## v2.3.0 - 3 Jan 2023
 
 • Proteus has been updated to work with the expander module ProteusX
-
-• Scales have been updated and now include a scale based on the Indian raga Bhairavi
 
 • New module Jawari, a tanpura simulator
 
