@@ -1,5 +1,9 @@
 # Changelog
 
+## v.2.4.1 - March 2023
+
+ • TBA
+
 ## v.2.4.0 - March 2023
 
 • Jawari has been redesigned and uses significantly less CPU
