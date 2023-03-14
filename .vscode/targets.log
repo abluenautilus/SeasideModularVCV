@@ -13,10 +13,12 @@ make: -dumpmachine: Command not found
 
 make: -dumpmachine: Command not found
 
-../../arch.mk:10: *** Could not determine CPU architecture of . Try hacking around in arch.mk.  Stop.
+make: -dumpmachine: Command not found
+
+../../arch.mk:17: *** Could not determine CPU architecture of .  Stop.
 
 
-# Make data base, printed on Tue Jan  3 00:53:30 2023
+# Make data base, printed on Tue Mar 14 11:03:41 2023
 
 # Variables
 
@@ -25,11 +27,9 @@ make: -dumpmachine: Command not found
 # automatic
 ?F = $(notdir $?)
 # environment
-FSLREMOTECALL = 
+VSCODE_CRASH_REPORTER_PROCESS_TYPE = extensionHost
 # automatic
 ?D = $(patsubst %/,%,$(dir $?))
-# environment
-PLATFORMIO_IDE = 2.5.5
 # automatic
 @D = $(patsubst %/,%,$(dir $@))
 # automatic
@@ -44,8 +44,6 @@ SHELL = /bin/sh
 VSCODE_NLS_CONFIG = {"locale":"en-us","availableLanguages":{},"_languagePackSupport":true}
 # environment
 _ = /usr/bin/make
-# makefile (from `Makefile', line 7)
-CFLAGS = -O0
 # environment
 FSLDIR = /usr/local/fsl
 # makefile (from `../../arch.mk', line 1)
@@ -55,7 +53,7 @@ SOURCES = $(wildcard src/*.cpp) $(wildcard inc/*.cpp) ${wildcard inc/DaisySP/Sou
 # makefile (from `Makefile', line 8)
 CXXFLAGS = -I$(DAISYSP_DIR)/Source
 # makefile (from `../../plugin.mk', line 6)
-VERSION := 2.2.1
+VERSION := 2.4
 # environment
 __CFBundleIdentifier = com.microsoft.VSCode
 # environment
@@ -63,7 +61,7 @@ FSLOUTPUTTYPE = NIFTI_GZ
 # environment
 VSCODE_CWD = /
 # environment
-NO_PROXY = 127.0.0.1
+PATH = /Users/jonask/opt/anaconda3/bin:/Users/jonask/opt/anaconda3/condabin:/Users/jonas/bin:/Users/jonask/anaconda/bin:/usr/local/fsl/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin:/usr/local/MacGPG2/bin:/opt/X11/bin:/Library/Apple/usr/bin:/Users/jonask/bin:/Users/jonask/fMRI/moralframing/scripts:/usr/local/fsl/bin:/usr/local/mysql/bin:/Users/jonask/.composer/vendor/bin
 # environment
 LSCOLORS = excxdxdxgxdxdxbxdxdxex
 # makefile (from `../../plugin.mk', line 15)
@@ -71,19 +69,17 @@ DISTRIBUTABLES = res $(wildcard LICENSE*) $(wildcard presets) plugin.json
 # makefile (from `Makefile', line 3)
 DAISYSP_DIR = inc/DaisySP
 # environment
-FSLMACHINELIST = 
-# environment
 ELECTRON_RUN_AS_NODE = 1
 # makefile (from `../../plugin.mk', line 22)
 LDFLAGS = -shared -L$(RACK_DIR) -lRack
 # default
 .FEATURES := target-specific order-only second-expansion else-if archives jobserver check-symlink
 # environment
-SSH_AUTH_SOCK = /private/tmp/com.apple.launchd.k7XsduD71D/Listeners
+SSH_AUTH_SOCK = /private/tmp/com.apple.launchd.U1TcZ1l4tZ/Listeners
 # automatic
 %F = $(notdir $%)
 # environment
-DISPLAY = /private/tmp/com.apple.launchd.he6fR0zk2t/org.xquartz:0
+DISPLAY = /private/tmp/com.apple.launchd.enh58ey8Yw/org.xquartz:0
 # environment
 CONDA_EXE = /Users/jonask/opt/anaconda3/bin/conda
 # environment
@@ -97,16 +93,13 @@ VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
 # environment
 HOME = /Users/jonask
 # default
- 
 MAKEFILEPATH = $(shell /usr/bin/xcode-select -print-path 2>/dev/null || echo /Developer)/Makefiles
 # environment
-VSCODE_CODE_CACHE_PATH = /Users/jonask/Library/Application Support/Code/CachedData/e8a3071ea4344d9d48ef8a4df2c097372b0c5161
+VSCODE_CODE_CACHE_PATH = /Users/jonask/Library/Application Support/Code/CachedData/5e805b79fcb6ba4c2d23712967df89a089da575b
 # environment
 LOGNAME = jonask
 # environment
 APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
-# environment
-CONDA_PROMPT_MODIFIER = 
 # makefile (from `Makefile', line 2)
 RACK_DIR = ../..
 # environment
@@ -116,17 +109,17 @@ VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # environment
 CONDA_DEFAULT_ENV = base
 # environment
-PLATFORMIO_PATH = /Users/jonask/.platformio/python3/bin:/Users/jonask/opt/anaconda3/bin:/Users/jonask/opt/anaconda3/condabin:/Users/jonas/bin:/Users/jonask/anaconda/bin:/usr/local/fsl/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin:/usr/local/MacGPG2/bin:/opt/X11/bin:/Library/Apple/usr/bin:/Users/jonask/bin:/Users/jonask/fMRI/moralframing/scripts:/usr/local/fsl/bin:/usr/local/mysql/bin:/Users/jonask/.composer/vendor/bin
+XPC_FLAGS = 0x0
 # default
 MAKE = $(MAKE_COMMAND)
 # environment
 FSLGECUDAQ = cuda.q
 # environment
-PATH = /Users/jonask/opt/anaconda3/bin:/Users/jonask/opt/anaconda3/condabin:/Users/jonas/bin:/Users/jonask/anaconda/bin:/usr/local/fsl/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin:/usr/local/MacGPG2/bin:/opt/X11/bin:/Library/Apple/usr/bin:/Users/jonask/bin:/Users/jonask/fMRI/moralframing/scripts:/usr/local/fsl/bin:/usr/local/mysql/bin:/Users/jonask/.composer/vendor/bin
-# environment
 SHLVL = 1
 # environment
-XPC_FLAGS = 0x0
+JAVA_HOME = /Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home
+# environment
+VSCODE_CRASH_REPORTER_SANDBOXED_HINT = 1
 # default
 MAKE_VERSION := 3.81
 # environment
@@ -148,9 +141,7 @@ TMPDIR = /var/folders/0q/sbsy1b4j0g95g3j3ztxp7pdw0000gn/T/
 # automatic
 *F = $(notdir $*)
 # environment
-VSCODE_IPC_HOOK = /Users/jonask/Library/Application Support/Code/1.74.2-main.sock
-# environment
-FSLLOCKDIR = 
+VSCODE_IPC_HOOK = /Users/jonask/Library/Application Support/Code/1.76-main.sock
 # environment
 MallocNanoZone = 0
 # environment
@@ -162,9 +153,11 @@ MFLAGS = -Rrqp
 # automatic
 *D = $(patsubst %/,%,$(dir $*))
 # environment
-XPC_SERVICE_NAME = application.com.microsoft.VSCode.185639195.185639201
+XPC_SERVICE_NAME = application.com.microsoft.VSCode.241726059.241726065
 # automatic
 +D = $(patsubst %/,%,$(dir $+))
+# environment
+VSCODE_L10N_BUNDLE_LOCATION = 
 # automatic
 +F = $(notdir $+)
 # environment
@@ -178,8 +171,6 @@ FSLTCLSH = /usr/local/fsl/bin/fsltclsh
 # automatic
 <F = $(notdir $<)
 # environment
-PLATFORMIO_CALLER = vscode
-# environment
 LC_ALL = C
 # environment
 CONDA_PYTHON_EXE = /Users/jonask/opt/anaconda3/bin/python
@@ -189,9 +180,7 @@ CONDA_PYTHON_EXE = /Users/jonask/opt/anaconda3/bin/python
 SUFFIXES := 
 # makefile (from `../../plugin.mk', line 18)
 FLAGS =  -fPIC -I$(RACK_DIR)/include -I$(RACK_DIR)/dep/include
-# environment
-_CE_M = 
-# makefile (from `../../arch.mk', line 1)
+# makefile (from `../../arch.mk', line 4)
 MACHINE = $(shell $(CC) -dumpmachine)
 # default
 .INCLUDE_DIRS = /usr/local/include
@@ -204,24 +193,21 @@ CLICOLOR = 1
 # environment
 CONDA_PREFIX = /Users/jonask/opt/anaconda3
 # environment
-VSCODE_PID = 33144
-# environment
-_CE_CONDA = 
+VSCODE_PID = 82434
 # environment
 LANG = C
 # variable set hash-table stats:
-# Load=94/1024=9%, Rehash=0, Collisions=6/158=4%
+# Load=87/1024=8%, Rehash=0, Collisions=4/156=3%
 
 # Pattern-specific Variable Values
 
 # No pattern-specific variable values.
 
 # Directories
- 
 
-# . (device 16777223, inode 153048404): 18 files, no impossibilities.
+# . (device 16777223, inode 153048404): 23 files, no impossibilities.
 
-# 18 files, no impossibilities in 1 directories.
+# 23 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -279,6 +265,6 @@ Makefile:
 # strcache size: total = 4096 / max = 4096 / min = 4096 / avg = 4096
 # strcache free: total = 4057 / max = 4057 / min = 4057 / avg = 4057
 
-# Finished Make data base on Tue Jan  3 00:53:30 2023
+# Finished Make data base on Tue Mar 14 11:03:41 2023
 
  

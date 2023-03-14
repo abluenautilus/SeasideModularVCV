@@ -10,3 +10,4 @@ extern Plugin* pluginInstance;
 extern Model* modelProteusX;
 extern Model* modelProteus;
 extern Model* modelJawari;
+extern Model* modelProteusPlus;
