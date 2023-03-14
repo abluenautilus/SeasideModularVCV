@@ -9,4 +9,5 @@ extern Plugin* pluginInstance;
 // Declare each Model, defined in each module source file
 extern Model* modelProteusX;
 extern Model* modelProteus;
+extern Model* modelProteusPlus;
 extern Model* modelJawari;
