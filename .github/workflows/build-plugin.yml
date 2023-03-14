@@ -22,6 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         platform: [win, linux]
+    if: github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v3
         with:
@@ -49,6 +50,7 @@ jobs:
       fail-fast: false
       matrix:
         platform: [x64, arm64]
+    if: github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v3
         with:
