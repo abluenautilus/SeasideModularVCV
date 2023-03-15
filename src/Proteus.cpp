@@ -553,7 +553,6 @@ struct Proteus : Module {
 				proteusMessage *messagesFromExpander = (proteusMessage*)rightExpander.consumerMessage;
 				bool loadButtonPressed = messagesFromExpander[0].loadButtonPressed;
 				if (loadButtonPressed) {
-					INFO("PROTEUS RECEIVED MESSAGE THAT BUTTON WAS PRESSED");
 					for (int a =0; a < 32; ++a) {
 						sequence[a] = messagesFromExpander[0].sequence[a];
 					}
@@ -652,7 +651,7 @@ struct Proteus : Module {
 		if (restMode) {
 			
 			++restStep;
-			INFO("Resting %d",restStep);
+
 
 			if (restStep >= restValue) {
 				restMode = false;
