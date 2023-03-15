@@ -68,3 +68,16 @@ template <typename TLightBase = BlueLight>
 struct BigLightSlider : SeasideLightSlider<BigSlider, BigSliderLight<TLightBase>> {
 	BigLightSlider() {}
 };
+
+// JACKS
+struct PJ301MPortDark : app::SvgPort {
+	PJ301MPortDark() {
+		setSvg(Svg::load(asset::plugin(pluginInstance, "res/Components/PJ301M_dark.svg")));
+	}
+};
+
+struct PJ301MPortBlue : app::SvgPort {
+	PJ301MPortBlue() {
+		setSvg(Svg::load(asset::plugin(pluginInstance, "res/Components/PJ301M_blue.svg")));
+	}
+};

@@ -200,7 +200,7 @@ struct Proteus : Module {
 
 		configParam(POT1_PARAM, 1.0f, 32.0f, 16.0f, "Sequence length"," beats");
 		paramQuantities[POT1_PARAM]->snapEnabled = true;
-		configParam<scaleKnob>(POT2_PARAM, 1.f, 8.f, 1.f, "Scale");
+		configParam<scaleKnob>(POT2_PARAM, 1.f, 11.f, 1.f, "Scale");
 		paramQuantities[POT2_PARAM]->snapEnabled = true;
 		configParam(POT3_PARAM, 1.f, 50.f, 20.f, "Lambda");
 		paramQuantities[POT3_PARAM]->snapEnabled = true;
@@ -735,10 +735,7 @@ struct Proteus : Module {
 			if (restValue > 0) {
 				restStep = 0;
 				restMode = true;
-				INFO("ENTERING REST MODE resting for %.2f",restValue);
-			} else {
-				INFO("Restvalue is %.2f not resting",restValue);
-			}
+			} 
 		}
 
 		//Expander
