@@ -2,7 +2,9 @@
 
 ## v.2.4.1 - March 2023
 
- • TBA
+• Adds v/oct tuning for Jawari
+
+• Adds tuning, bhairavi, and ahir bhairav scales. Tuning mode just outputs C's and is for tuning your oscillators. 
 
 ## v.2.4.0 - March 2023
 
