@@ -24,6 +24,9 @@ Minor Pentatonic
 Dorian
 Mixolydian
 Chromatic
+Tuning (All C's)
+Bhairavi
+Ahir Bhairav
 
 **Lambda** - This controls the probability function that determines how likely Proteus is to create a brand new melody. When the number of repeats reaches lambda, there is a 50% chance of a new melody. Proteus uses a Poisson cumulative density function. The shape of this function means that probability will stay very low for several repetitions, but will begin to climb rapidly as you approach lambda. The brightness of the LEDs indicates the current probability of a change; they will start out dim and get brighter every loop. 
 

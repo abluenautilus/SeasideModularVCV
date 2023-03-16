@@ -269,7 +269,6 @@ struct ProteusX : Module {
     }
 
     void doLoad(int button) {
-        INFO("Load button %d pressed",button);
         
         if (slotFull[button]) {
         
@@ -303,8 +302,6 @@ struct ProteusX : Module {
     }
     void doSave (int button){
 
-        INFO("Save button %d pressed",button);
-        INFO("Slotfull is %d",slotFull[button]);
 
         if (!slotFull[button]) {
 
@@ -332,7 +329,6 @@ struct ProteusX : Module {
                 for (int a = 0; a < 32; ++a) {
                     sequences[button][a] = messagesFromExpander[0].sequence[a];
                     restorders[button][a] = messagesFromExpander[0].restorder[a];
-                    INFO("Saving note %s ",sequences[button][a].noteName.c_str());
                 }
 
 
@@ -348,7 +344,6 @@ struct ProteusX : Module {
 
     void doClear (int button) {
 
-        INFO("Clearing button %d",button);
 
         slotFull[button] = false;
 
@@ -359,7 +354,6 @@ struct ProteusX : Module {
     }
     
     void doNext() {
-        INFO("Doing next pattern");
 
         currentPattern++;
         if (currentPattern >= NUM_SLOTS) {
@@ -378,7 +372,6 @@ struct ProteusX : Module {
     }
 
     void doPrev() {
-         INFO("Doing previous pattern");
         currentPattern--;
         if (currentPattern < 0) {
             currentPattern  = NUM_SLOTS;
@@ -397,7 +390,6 @@ struct ProteusX : Module {
     }
 
     void doRand() {
-         INFO("Doing random pattern");
 
          currentPattern = rand() % 5;
     
@@ -407,7 +399,6 @@ struct ProteusX : Module {
             currentPattern = rand() % 5;
         }
 
-        INFO("Chosen pattern: %d",currentPattern);
         doLoad(currentPattern); 
     }
 

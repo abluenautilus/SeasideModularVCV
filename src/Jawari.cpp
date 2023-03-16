@@ -29,6 +29,8 @@ struct Jawari : Module {
         CLOCK_INPUT,
 		JAWARI_INPUT,
         RESET_INPUT,
+        PITCH_INPUT,
+        STRING_INPUT,
 		INPUTS_LEN
 	};
 	enum OutputId {
@@ -79,6 +81,12 @@ struct Jawari : Module {
     //Tuning
     int semiOffset, octaveOffset, string1Offset = 0;
     int semiOffsetPrev, octaveOffsetPrev, string1OffsetPrev = 0;
+    float cv_pitch, cv_string, cv_pitch_prev, cv_string_prev = 0.0;
+    int cv_string_octaves = 0;
+    int cv_string_semis = 0 ;
+    int cv_string_total_semis = 0;
+    int cv_pitch_octaves = 0;
+    int cv_pitch_semis = 0;
 
     Jawari() {
 
@@ -125,7 +133,7 @@ struct Jawari : Module {
             strings[i].Init(sampleRate,string_buffer[i],string_npt,daisysp::PLUCK_MODE_RECURSIVE);
             strings[i].SetAmp(1.0f);
             strings[i].SetDecay(1.0f);
-            strings[i].SetDamp(1.0f);
+            strings[i].SetDamp(0.995f);
             strings[i].SetFreq(notes[i].frequency);
             string_trig[i] = 0.f;
 
@@ -145,6 +153,77 @@ struct Jawari : Module {
         current_note = current_note + 1;
         if (current_note >= NUM_STRINGS) {current_note = 0;};
         string_trig[current_note] = 1.0f;
+
+        // Tuning
+        semiOffset = params[SEMI_PARAM].getValue();
+        octaveOffset = params[OCTAVE_PARAM].getValue();
+        string1Offset = params[TUNING_PARAM].getValue();
+        cv_pitch = clamp(inputs[PITCH_INPUT].getVoltage(),-1.0,2.0);
+        cv_string = clamp(inputs[STRING_INPUT].getVoltage(),-1.0,2.0);
+
+        // We only calculate new frequency if values have changed to limit CPU
+        if ( string1Offset != string1OffsetPrev || cv_string != cv_string_prev) {
+            // First string tuning has changed
+
+            cv_string_octaves = floor(cv_string);
+            cv_string_semis = static_cast<int>((cv_string - cv_string_octaves)*12);
+            cv_string_total_semis = 12 * cv_string_octaves + cv_string_semis;
+
+            int semi,octave = 0;
+            semi = string1Offset + semiOffset + cv_string_total_semis;
+            octave = notes_orig[0].octave + octaveOffset + cv_pitch_octaves;
+
+            if (semi > 12) {
+                octave++;
+                semi = semi - 12;
+            } else if (semi < 0) {
+                octave--;
+                semi = 12-semi;
+            }
+            semi = semi + cv_pitch_semis;
+
+            // Retune first string
+            notes[0].setNote(notes[0].numToNote[semi],octave);
+            strings[0].SetFreq(notes[0].frequency );
+            combs[0].SetFreq(notes[0].frequency );
+
+      
+            cv_string_prev = cv_string;
+            string1OffsetPrev = string1Offset;
+        }
+
+        if (semiOffset != semiOffsetPrev || octaveOffset != octaveOffsetPrev || cv_pitch != cv_pitch_prev) {
+
+            cv_pitch_octaves = floor(cv_pitch);
+            cv_pitch_semis = static_cast<int>((cv_pitch - cv_pitch_octaves)*12);
+
+            for (int i = 1; i < 4; ++i) {
+
+                int semi,octave = 0;
+                semi = notes_orig[i].toneNum + semiOffset;
+                octave = notes_orig[i].octave + octaveOffset + cv_pitch_octaves;
+
+                if (semi > 12) {
+                    octave++;
+                    semi = semi - 12;
+                } else if (semi < 0) {
+                    octave--;
+                    semi = 12-semi;
+                }
+
+                semi = semi + cv_pitch_semis;
+
+                // Retune string
+                notes[i].setNote(notes[i].numToNote[semi],octave);
+                strings[i].SetFreq(notes[i].frequency );
+                combs[i].SetFreq(notes[i].frequency );
+            }
+
+            semiOffsetPrev = semiOffset;
+            octaveOffsetPrev = octaveOffset;
+            cv_pitch_prev = cv_pitch;
+
+        }
 
     }
 
@@ -178,48 +257,9 @@ struct Jawari : Module {
 	void process(const ProcessArgs& args) override {
 
         jawari = clamp(params[JAWARI_PARAM].getValue() + inputs[JAWARI_INPUT].getVoltage(),0.0f,1.0f);
-
         comb_mix = jawari * 2.5;
         string_mix = 2.5 - comb_mix;
-        
         lights[JAWARI_LED].setBrightness(jawari);
-
-        // Tuning
-        semiOffset = params[SEMI_PARAM].getValue();
-        octaveOffset = params[OCTAVE_PARAM].getValue();
-        string1Offset = params[TUNING_PARAM].getValue();
-
-        // We only calculate new frequency if values have changed to limit CPU
-        if (semiOffset != semiOffsetPrev || octaveOffset != octaveOffsetPrev || string1Offset != string1OffsetPrev) {
-
-            for (int i = 0; i < 4; ++i) {
-
-                int semi,octave = 0;
-                if (i == 0 ) {
-                    semi = string1Offset + semiOffset;
-                } else {
-                    semi = notes_orig[i].toneNum + semiOffset;
-                }
-                octave = notes_orig[i].octave + octaveOffset;
-
-                if (semi > 12) {
-                    octave++;
-                    semi = semi - 12;
-                } else if (semi < 0) {
-                    octave--;
-                    semi = 12-semi;
-                }
-
-                notes[i].setNote(notes[i].numToNote[semi],octave);
-
-                strings[i].SetFreq(notes[i].frequency );
-                combs[i].SetFreq(notes[i].frequency );
-            }
-
-            semiOffsetPrev = semiOffset;
-            octaveOffsetPrev = octaveOffset;
-            string1OffsetPrev = string1Offset;
-        }
 
         // Process button press
 		if (buttonTrig.process(params[STRUMBUTTON_PARAM].getValue())) {
@@ -254,8 +294,9 @@ struct Jawari : Module {
 
         //jawari makes things louder, so we balance for that
         float sig;
-        float compensationFactor = 4;
-        sig = (compensationFactor - (compensationFactor - 1)*jawari) * currentVoltage;
+        float compensationFactor = 5;
+        float multiplier = compensationFactor - (compensationFactor - jawari)*jawari;
+        sig = multiplier * currentVoltage;
 
         sig = dcblocker.Process(sig);
 
@@ -291,16 +332,18 @@ struct JawariWidget : ModuleWidget {
 
         addParam(createLightParamCentered<BigLightSlider<SeasideBlueLight>>(mm2px(Vec(25.4, 39.5)), module, Jawari::JAWARI_PARAM,Jawari::JAWARI_LED));
         
-        addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(9, 88)), module, Jawari::SEMI_PARAM));
+        addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(8.8, 88)), module, Jawari::SEMI_PARAM));
         addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(25.4, 88)), module, Jawari::OCTAVE_PARAM));
         addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(42, 88)), module, Jawari::TUNING_PARAM));
 
         addParam(createParamCentered<VCVButton>(mm2px(Vec(25.4, 113)), module, Jawari::STRUMBUTTON_PARAM));
-        addParam(createParamCentered<VCVButton>(mm2px(Vec(9, 113)), module, Jawari::RESETBUTTON_PARAM));
+        addParam(createParamCentered<VCVButton>(mm2px(Vec(8.8, 113)), module, Jawari::RESETBUTTON_PARAM));
 
         addInput(createInputCentered<PJ301MPort>(mm2px(Vec(25.4, 67)), module, Jawari::JAWARI_INPUT));
         addInput(createInputCentered<PJ301MPort>(mm2px(Vec(25.4, 105)), module, Jawari::CLOCK_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(9, 105)), module, Jawari::RESET_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(8.8, 105)), module, Jawari::RESET_INPUT));
+        addInput(createInputCentered<PJ301MPortBlue>(mm2px(Vec(8.8, 55)), module, Jawari::PITCH_INPUT));
+        addInput(createInputCentered<PJ301MPortBlue>(mm2px(Vec(42, 55)), module, Jawari::STRING_INPUT));
 
         addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(42, 105)), module, Jawari::AUDIOOUT1_OUTPUT));
 
