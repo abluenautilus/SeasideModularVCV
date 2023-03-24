@@ -103,6 +103,8 @@ struct Jawari : Module {
         configInput(JAWARI_INPUT, "Bridge shape");
         configInput(CLOCK_INPUT, "Strum (clock input)");
         configInput(RESET_INPUT, "Reset");
+        configInput(PITCH_INPUT,"v/oct main");
+        configInput(STRING_INPUT,"v/oct 1st string");
 
         configParam(STRUMBUTTON_PARAM, 0.f, 1.f, 0.f, "Strum");
         configParam(RESETBUTTON_PARAM, 0.f, 1.f, 0.f, "Reset");

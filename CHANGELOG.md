@@ -1,5 +1,17 @@
 # Changelog
 
+## v.2.4.2 - March 2023
+
+• Fixes loading and saving of sequences
+
+• Density is now accurately maintained when the sequence changes in length
+
+• Sequence light positions have been fixed
+
+• Lights no longer advance during rest, instead light 1 blinks orange
+
+• Rest and Transpose adjustments go away if Px is not connected to Proteus
+
 ## v.2.4.1 - March 2023
 
 • Adds v/oct tuning for Jawari

@@ -1,4 +1,4 @@
-## Jawari Module v2.4.1
+## Jawari Module v2.4.2
 
 Jawari is a simulation of the tanpura, an Indian drone instrument. The tanpura typically has four strings, which are tuned to produce a consistent drone when plucked in order repeatedly. It is not a melodic instrument. 
 

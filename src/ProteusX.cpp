@@ -170,6 +170,22 @@ struct ProteusX : Module {
             
         }
 
+        // Initialize blank sequences
+        for (int s = 0; s < NUM_SLOTS; ++s) {
+            for (int i = 0; i<maxSteps; ++i) {
+			    restorders[s][i] = 0;
+                sequences[s][i] = Note(60);
+		    }
+        }
+
+        // Set up messages if Proteus is there
+        if (leftExpander.module && (leftExpander.module->model == modelProteus)) {
+            //Outoing data to Proteus
+            proteusMessage *messageToExpander = (proteusMessage*)(leftExpander.module->rightExpander.consumerMessage);
+            messageToExpander[0].transposeValue = transposeValue;
+            messageToExpander[0].restValue = restValue;
+        }      
+
     }
 
 
