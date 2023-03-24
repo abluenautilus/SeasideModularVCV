@@ -18,7 +18,7 @@ make: -dumpmachine: Command not found
 ../../arch.mk:17: *** Could not determine CPU architecture of .  Stop.
 
 
-# Make data base, printed on Tue Mar 14 11:03:41 2023
+# Make data base, printed on Thu Mar 23 21:55:24 2023
 
 # Variables
 
@@ -38,6 +38,7 @@ VSCODE_CRASH_REPORTER_PROCESS_TYPE = extensionHost
 SLUG := SeasideModular
 # makefile
 CURDIR := /Users/jonask/Music/VCVRack/Rack/plugins/Seaside
+ 
 # makefile
 SHELL = /bin/sh
 # environment
@@ -53,13 +54,15 @@ SOURCES = $(wildcard src/*.cpp) $(wildcard inc/*.cpp) ${wildcard inc/DaisySP/Sou
 # makefile (from `Makefile', line 8)
 CXXFLAGS = -I$(DAISYSP_DIR)/Source
 # makefile (from `../../plugin.mk', line 6)
-VERSION := 2.4
+VERSION := 2.4.1
 # environment
 __CFBundleIdentifier = com.microsoft.VSCode
 # environment
 FSLOUTPUTTYPE = NIFTI_GZ
 # environment
 VSCODE_CWD = /
+# environment
+GSETTINGS_SCHEMA_DIR = /Users/jonask/opt/anaconda3/share/glib-2.0/schemas
 # environment
 PATH = /Users/jonask/opt/anaconda3/bin:/Users/jonask/opt/anaconda3/condabin:/Users/jonas/bin:/Users/jonask/anaconda/bin:/usr/local/fsl/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin:/usr/local/MacGPG2/bin:/opt/X11/bin:/Library/Apple/usr/bin:/Users/jonask/bin:/Users/jonask/fMRI/moralframing/scripts:/usr/local/fsl/bin:/usr/local/mysql/bin:/Users/jonask/.composer/vendor/bin
 # environment
@@ -95,7 +98,7 @@ HOME = /Users/jonask
 # default
 MAKEFILEPATH = $(shell /usr/bin/xcode-select -print-path 2>/dev/null || echo /Developer)/Makefiles
 # environment
-VSCODE_CODE_CACHE_PATH = /Users/jonask/Library/Application Support/Code/CachedData/5e805b79fcb6ba4c2d23712967df89a089da575b
+VSCODE_CODE_CACHE_PATH = /Users/jonask/Library/Application Support/Code/CachedData/ee2b180d582a7f601fa6ecfdad8d9fd269ab1884
 # environment
 LOGNAME = jonask
 # environment
@@ -153,7 +156,7 @@ MFLAGS = -Rrqp
 # automatic
 *D = $(patsubst %/,%,$(dir $*))
 # environment
-XPC_SERVICE_NAME = application.com.microsoft.VSCode.241726059.241726065
+XPC_SERVICE_NAME = application.com.microsoft.VSCode.253507528.253507534
 # automatic
 +D = $(patsubst %/,%,$(dir $+))
 # environment
@@ -193,11 +196,11 @@ CLICOLOR = 1
 # environment
 CONDA_PREFIX = /Users/jonask/opt/anaconda3
 # environment
-VSCODE_PID = 82434
+VSCODE_PID = 59157
 # environment
 LANG = C
 # variable set hash-table stats:
-# Load=87/1024=8%, Rehash=0, Collisions=4/156=3%
+# Load=88/1024=9%, Rehash=0, Collisions=4/157=3%
 
 # Pattern-specific Variable Values
 
@@ -213,6 +216,7 @@ LANG = C
 
 # No implicit rules.
 
+ 
 # Files
 
 # Not a target:
@@ -265,6 +269,6 @@ Makefile:
 # strcache size: total = 4096 / max = 4096 / min = 4096 / avg = 4096
 # strcache free: total = 4057 / max = 4057 / min = 4057 / avg = 4057
 
-# Finished Make data base on Tue Mar 14 11:03:41 2023
+# Finished Make data base on Thu Mar 23 21:55:24 2023
 
  

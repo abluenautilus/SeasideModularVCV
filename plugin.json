@@ -33,6 +33,20 @@
       "description": "Proteus expander module, adds functionality to the Proteus sequencer",
       "tags": ["sequencer"],
       "keywords":["sequencer"]
+    },
+    {
+      "slug": "ProteusPlus",
+      "name": "ProteusPlus",
+      "description": "TBD",
+      "tags": ["TBD"],
+      "keywords":["TBD"]
+    },
+    {
+      "slug": "Eclipse",
+      "name": "Eclipse",
+      "description": "No description",
+      "tags": [""],
+      "keywords":[""]
     }
   ]
 }

@@ -46,6 +46,8 @@ struct SeasideLightSlider : TBase {
 	}
 };
 
+// SLIDER
+
 struct BigSlider : app::SvgSlider {
 	BigSlider() {
 		setBackgroundSvg(Svg::load(asset::plugin(pluginInstance, "res/Components/BigSlider.svg")));
@@ -70,6 +72,7 @@ struct BigLightSlider : SeasideLightSlider<BigSlider, BigSliderLight<TLightBase>
 };
 
 // JACKS
+
 struct PJ301MPortDark : app::SvgPort {
 	PJ301MPortDark() {
 		setSvg(Svg::load(asset::plugin(pluginInstance, "res/Components/PJ301M_dark.svg")));
@@ -79,5 +82,20 @@ struct PJ301MPortDark : app::SvgPort {
 struct PJ301MPortBlue : app::SvgPort {
 	PJ301MPortBlue() {
 		setSvg(Svg::load(asset::plugin(pluginInstance, "res/Components/PJ301M_blue.svg")));
+	}
+};
+
+struct PJ301MPortBlack : app::SvgPort {
+	PJ301MPortBlack() {
+		setSvg(Svg::load(asset::plugin(pluginInstance, "res/Components/PJ301M_black.svg")));
+	}
+};
+
+// KNOBS
+
+struct RoundBlackKnobEclipse : RoundKnob {
+	RoundBlackKnobEclipse() {
+		setSvg(Svg::load(asset::plugin(pluginInstance, "res/Components/PJ301M_black.svg")));
+		bg->setSvg(Svg::load(asset::plugin(pluginInstance, "res/Components/PJ301M_black.svg")));
 	}
 };
