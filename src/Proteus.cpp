@@ -238,6 +238,13 @@ struct Proteus : Module {
 		restProbability = clamp(100 - params[POT5_PARAM].getValue() - (10 * densityCV),0.0,100.0); 
 
 		rng.seed(std::chrono::system_clock::now().time_since_epoch().count());
+
+		// Clear sequences
+		for (int i = 0; i < maxSteps; ++i) {
+			restorder[i] = 0;
+			sequence[i] = Note(60);
+		}
+
 		newMelody();
 	}
 
@@ -383,26 +390,7 @@ struct Proteus : Module {
 		
 		//If sequence length changed we may need to adjust rests
 		if (sequenceLength != sequenceLengthPrev) {
-			if (sequenceLength > sequenceLengthPrev) {
-				
-				int numHidden = sequenceLength - sequenceLengthPrev;
-				int hiddenRests[numHidden];
-				int x = 0;
-				for (int y=sequenceLengthPrev-1; y<sequenceLength; ++y) {
-					hiddenRests[x] = y;
-					++x;
-				}
-				
-				std::shuffle(&hiddenRests[0],&hiddenRests[numHidden-1],rng);
-				int counter = 0;
-				for (int w = sequenceLengthPrev; w < sequenceLength; ++w) {
-					restorder[w] = hiddenRests[counter];
-					++counter;
-				}
-				updateRests();
-			} else {
-				updateRests();
-			}
+			updateLength();
 		} 
 
 		sequenceLengthPrev = sequenceLength;
@@ -553,9 +541,15 @@ struct Proteus : Module {
 				proteusMessage *messagesFromExpander = (proteusMessage*)rightExpander.consumerMessage;
 				bool loadButtonPressed = messagesFromExpander[0].loadButtonPressed;
 				if (loadButtonPressed) {
+					//We need to adjust Density and Length based on current knob position
 					for (int a =0; a < 32; ++a) {
 						sequence[a] = messagesFromExpander[0].sequence[a];
+						restorder[a] = messagesFromExpander[0].restorder[a];
 					}
+					// If new sequence length doesn't match loaded length, we need to reassign rest orders
+					sequenceLengthPrev = sequenceLength;
+					updateLength();
+					updateRests();
 					rightMessages[1][0].loadButtonPressed = false;
 
 				}
@@ -566,6 +560,10 @@ struct Proteus : Module {
 			lights[LEDX_LIGHT_RED].setBrightness(0); //R
 			lights[LEDX_LIGHT_GREEN].setBrightness(0); //G
 			lights[LEDX_LIGHT_BLUE].setBrightness(0); //B
+			
+			restValue = 0;
+			transposeValue = 0;
+
 		}
 
 	}
@@ -576,12 +574,65 @@ struct Proteus : Module {
 		if (numRestNotes == sequenceLength) {--numRestNotes;} //always leave at least one note
 
 		for (int x = 0; x < sequenceLength; ++x) {
-			if (x < numRestNotes) {
-				sequence[restorder[x]].muted = true;
-			} else {
-				sequence[restorder[x]].muted = false;
-			}
+			if (x < maxSteps) {
+				if (x < numRestNotes) {
+					sequence[restorder[x]].muted = true;
+				} else {
+					sequence[restorder[x]].muted = false;
+				}
+			} 
 		}
+	}
+
+	void updateLength() {
+
+		// as of 2.4.2, if length has changed we are just going
+		// to reshuffle the rest order. 
+
+		for (int i = 0; i<sequenceLength; ++i) {
+			restorder[i] = i;
+		}
+		std::shuffle(std::begin(restorder),&restorder[sequenceLength-1],rng);
+
+		updateRests();
+
+		// Saving the old way of doing it in case we want to
+		// make it an option. 
+
+		// if (sequenceLength > sequenceLengthPrev) {
+		// 	int numHidden = sequenceLength - sequenceLengthPrev;
+		// 	int hiddenRests[numHidden];
+		// 	int x = 0;
+		// 	for (int y=sequenceLengthPrev; y<sequenceLength; ++y) {
+		// 		hiddenRests[x] = y;
+		// 		++x;
+		// 	}
+			
+		// 	std::shuffle(&hiddenRests[0],&hiddenRests[numHidden-1],rng);
+		// 	int counter = 0;
+		// 	for (int w = sequenceLengthPrev; w < sequenceLength; ++w) {
+		// 		restorder[w] = hiddenRests[counter];
+		// 		++counter;
+		// 	}
+		// 	updateRests();
+		// } else {
+
+		// 	//sequence got shorter. Remove any notes past the new length from restorder
+		// 	int placeholder = 0;
+		// 	for (int w = 0; w < maxSteps; ++w) {
+		// 		if (placeholder >= sequenceLength) {
+		// 			restorder[w] = 0;
+		// 			++placeholder;
+		// 		} else {
+		// 			if (restorder[w] < sequenceLength) {
+		// 				restorder[placeholder] = restorder[w];
+		// 				++placeholder;
+		// 			}
+		// 		}
+		// 	}
+
+		// 	updateRests();
+		// }
 	}
 
 	void transposeNote(Note* thenote, float transposeAmount) {
@@ -604,7 +655,6 @@ struct Proteus : Module {
 
 	void doStep() {
 
-
 		double p,q,s,xlam,bound;
 		int which,status;
 
@@ -615,8 +665,7 @@ struct Proteus : Module {
 		//turn all lights off
 		for (int i = 1; i <= LIGHTS_LEN; ++i) {
 			lights[i-1].setBrightness(0);
-		}
-		
+		};
 		//but turn the next one on
 		LEDbrightness = float(repetitionCount)/float(poisson_lambda);
 		LEDbrightness = LEDbrightness/0.5;
@@ -642,22 +691,30 @@ struct Proteus : Module {
 			}
 		}
 		
-		activeLED+=3;
-		if (activeLED >= LIGHTS_LEN) {activeLED=0;}
 
 		Note noteToPlay = sequence[currentNote];
 		transposeNote(&noteToPlay,transposeValue);
 
 		if (restMode) {
 			
+			if (restStep%2) {
+				lights[activeLED].setBrightness(0); //R
+				lights[activeLED+1].setBrightness(0); //G
+				lights[activeLED+2].setBrightness(0); //B
+			} else {
+				lights[activeLED].setBrightness(1); //R
+				lights[activeLED+1].setBrightness(0.5); //G
+				lights[activeLED+2].setBrightness(0); //B
+			}
 			++restStep;
-
-
 			if (restStep >= restValue) {
 				restMode = false;
 			}
 
 		} else {
+
+			activeLED+=3;
+			if (activeLED >= 12) {activeLED=0;}
 
 			//Play the current step's note
 			if (!noteToPlay.muted) {
@@ -747,8 +804,6 @@ struct Proteus : Module {
 					messagesToExpander[0].sequence[a] = sequence[a];
 					messagesToExpander[0].restorder[a] = restorder[a];
 				}
-					
-
 		} 
 
 	}

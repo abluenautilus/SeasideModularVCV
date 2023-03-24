@@ -1,4 +1,4 @@
-## Proteus Module v2.3.0
+## Proteus Module v2.4.2
 
 Proteus is a generative sequencer. It creates a melody, then loops that melody for a while, until it gets bored and creates a new one. While it's looping the melody, it may transpose by octave or mutate individual notes as controlled by the knobs or CV.
 
@@ -24,7 +24,7 @@ Minor Pentatonic
 Dorian
 Mixolydian
 Chromatic
-Tuning (All C's)
+Tuning (All C's, for tuning your oscillators)
 Bhairavi
 Ahir Bhairav
 
@@ -32,7 +32,7 @@ Ahir Bhairav
 
 **Gate** - This is the length of the gate output as a fraction of the incoming clock time (average trigger-to-trigger time).
 
-**Density** - This controls the density of the melodies. As you turn this knob towards 100, the proportion of rest notes decreases to 0 and all the steps will be filled with notes. Density is changed dynamically; every time the parameter changes, each note's probabilty of becoming a rest is independently re-calculated according to this parameter. Notes appear and disappear in the same order, so that if you increase density and then decrease it, you will come back to the exact same sequence. 
+**Density** - This controls the density of the melodies. As you turn this knob towards 100, the proportion of rest notes decreases to 0 and all the steps will be filled with notes. Density is changed dynamically; every time the parameter changes, each note's probabilty of becoming a rest is independently re-calculated according to this parameter. Notes appear and disappear in the same order, so that if you increase density and then decrease it, you will come back to the exact same sequence. However, if you change the length of the sequence, the "disappearing order" of the notes will have to be shuffled to adjust to the new sequence length. 
 
 **Octave** - Controls octave transposition probability. 
 
@@ -65,3 +65,5 @@ Len, Lambda, Density, Mutate, Gate, and Octave are CV controls for their respect
 **V/OCT** - Volt per octave out. 
 
 **GATE** - Gate output
+
+The light in the upper right corner of Proteus indicates if it has detected the Proteus Expander. See the manual for the Proteus Expander for more information. 
