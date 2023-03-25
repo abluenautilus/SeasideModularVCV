@@ -409,14 +409,14 @@ struct ProteusX : Module {
     void doPrev() {
         currentPattern--;
         if (currentPattern < 0) {
-            currentPattern  = NUM_SLOTS;
+            currentPattern  = NUM_SLOTS-1;
         }
         int iter = 0;
         while (!slotFull[currentPattern] && iter < 4) {
             iter++;
             currentPattern--;
             if (currentPattern < 0) {
-                currentPattern  = NUM_SLOTS;
+                currentPattern  = NUM_SLOTS-1;
             }
 
         }
