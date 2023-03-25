@@ -549,7 +549,6 @@ struct Proteus : Module {
 					}
 					// If new sequence length doesn't match loaded length, we need to reassign rest orders
 					sequenceLengthPrev = messagesFromExpander[0].sequenceLength;
-					INFO("Setting sequence length prev to %d",sequenceLengthPrev);
 					if (sequenceLength != sequenceLengthPrev) {
 						updateLength();
 					}
