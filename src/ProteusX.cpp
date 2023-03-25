@@ -12,6 +12,7 @@
 struct proteusMessage {
     Note sequence[32];
     int restorder[32];
+    int sequenceLength;
     int loadButtonPressed;
     float transposeValue;
     int restValue;
@@ -104,6 +105,7 @@ struct ProteusX : Module {
 	static const int maxSteps = 32;
     Note sequences[NUM_SLOTS][32];
     int restorders[NUM_SLOTS][32];
+    int sequenceLengths[NUM_SLOTS];
 
     bool slotFull[NUM_SLOTS];
 
@@ -176,6 +178,7 @@ struct ProteusX : Module {
 			    restorders[s][i] = 0;
                 sequences[s][i] = Note(60);
 		    }
+            sequenceLengths[s] = 0;
         }
 
         // Set up messages if Proteus is there
@@ -218,6 +221,10 @@ struct ProteusX : Module {
             }
         }
 
+        json_t *lengths = json_array();
+        for (int i = 0; i < NUM_SLOTS; ++i) {
+            json_array_insert_new(lengths, i, json_integer(sequenceLengths[i]));
+        }
         json_t *slots = json_array();
         for (int i = 0; i < NUM_SLOTS; ++i) {
             json_array_insert_new(slots, i, json_integer(slotFull[i]));
@@ -226,6 +233,7 @@ struct ProteusX : Module {
 		json_object_set_new(root, "sequences", seq);
         json_object_set_new(root, "restorders", ro);
         json_object_set_new(root, "slotsfull", slots);
+        json_object_set_new(root, "sequenceLengths", lengths);
 
 		json_object_set_new(root, "transposeValue", json_integer(restValue));
 		json_object_set_new(root, "restValue", json_integer(transposeValue));
@@ -273,6 +281,14 @@ struct ProteusX : Module {
             }
         }
 
+        json_t *sl = json_object_get(root,"sequenceLengths");
+        for (int i = 0; i < NUM_SLOTS; ++i) {
+            json_t *y = json_array_get(sl, i);
+            if (y) {
+                sequenceLengths[i]= json_integer_value(y);
+            }
+        }
+
         json_t *tv = json_object_get(root, "transposeValue");
 		if(tv) {
 			transposeValue = json_integer_value(tv);
@@ -311,6 +327,7 @@ struct ProteusX : Module {
                     messageToExpander[0].sequence[a] = sequences[button][a];
                     messageToExpander[0].restorder[a] = restorders[button][a];
                 }
+                messageToExpander[0].sequenceLength = sequenceLengths[button];
 
             }
         }
@@ -342,6 +359,8 @@ struct ProteusX : Module {
 
                 //Incoming data from Proteus
                 proteusMessage *messagesFromExpander = (proteusMessage*)(leftExpander.producerMessage);
+                sequenceLengths[button] = messagesFromExpander[0].sequenceLength;
+                
                 for (int a = 0; a < 32; ++a) {
                     sequences[button][a] = messagesFromExpander[0].sequence[a];
                     restorders[button][a] = messagesFromExpander[0].restorder[a];

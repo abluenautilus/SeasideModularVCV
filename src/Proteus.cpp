@@ -14,11 +14,12 @@
 
 struct proteusMessage {
     Note sequence[32];
-	int restorder[32];
+    int restorder[32];
+    int sequenceLength;
     int loadButtonPressed;
-	float transposeValue;
+    float transposeValue;
     int restValue;
-	std::string type;
+    std::string type;
 };
 
 struct Proteus : Module {
@@ -547,8 +548,11 @@ struct Proteus : Module {
 						restorder[a] = messagesFromExpander[0].restorder[a];
 					}
 					// If new sequence length doesn't match loaded length, we need to reassign rest orders
-					sequenceLengthPrev = sequenceLength;
-					updateLength();
+					sequenceLengthPrev = messagesFromExpander[0].sequenceLength;
+					INFO("Setting sequence length prev to %d",sequenceLengthPrev);
+					if (sequenceLength != sequenceLengthPrev) {
+						updateLength();
+					}
 					updateRests();
 					rightMessages[1][0].loadButtonPressed = false;
 
@@ -800,10 +804,12 @@ struct Proteus : Module {
 				//Outgoing data to send to expander
 				proteusMessage *messagesToExpander = (proteusMessage*)(rightExpander.module->leftExpander.producerMessage);
 				messagesToExpander[0].loadButtonPressed = (bool)newMelodyPressed;
+				messagesToExpander[0].sequenceLength = sequenceLength;
 				for (int a = 0; a < 32; ++a) {
 					messagesToExpander[0].sequence[a] = sequence[a];
 					messagesToExpander[0].restorder[a] = restorder[a];
 				}
+				
 		} 
 
 	}
