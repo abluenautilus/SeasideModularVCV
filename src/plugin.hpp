@@ -12,3 +12,4 @@ extern Model* modelProteus;
 extern Model* modelProteusPlus;
 extern Model* modelJawari;
 extern Model* modelEclipse;
+extern Model* modelTala;
