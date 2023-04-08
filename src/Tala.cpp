@@ -93,6 +93,21 @@ struct Tala : Module {
 
         config(PARAMS_LEN, INPUTS_LEN, OUTPUTS_LEN, LIGHTS_LEN);
         configParam(MODESWITCH_PARAM, 0.f, 2.f, 0.f, "Sample Mode");
+        configParam(BUTTON1_PARAM, 0.f, 1.f, 0.f,"Dha");
+        configParam(BUTTON2_PARAM, 0.f, 1.f, 0.f,"Dhin");
+        configParam(BUTTON3_PARAM, 0.f, 1.f, 0.f,"Dhit");
+        configParam(BUTTON4_PARAM, 0.f, 1.f, 0.f,"Dhun");
+        configParam(BUTTON5_PARAM, 0.f, 1.f, 0.f,"Ga");
+        configParam(BUTTON6_PARAM, 0.f, 1.f, 0.f,"Ge");
+        configParam(BUTTON7_PARAM, 0.f, 1.f, 0.f,"Ke");
+        configParam(BUTTON8_PARAM, 0.f, 1.f, 0.f,"Na");
+        configParam(BUTTON9_PARAM, 0.f, 1.f, 0.f,"Ta");
+        configParam(BUTTON10_PARAM, 0.f, 1.f, 0.f,"Ti");
+        configParam(BUTTON11_PARAM, 0.f, 1.f, 0.f,"Tin");
+        configParam(BUTTON12_PARAM, 0.f, 1.f, 0.f,"Tun");
+        configParam(BUTTONUP_PARAM, 0.f, 1.f, 0.f,"Prev Theka");
+        configParam(BUTTONDOWN_PARAM, 0.f, 1.f, 0.f,"Next Theka");
+
         configOutput(AUDIOOUTL_OUTPUT, "Out L");
         configOutput(AUDIOOUTR_OUTPUT, "Out R");
 
@@ -122,7 +137,7 @@ struct Tala : Module {
         //PLAY next BOL
         std::string currentBolName = thekalib.thekas[currentTheka].bols[currentStep];
         int currentBolNum = bolNums.at(currentBolName);
-        bols[currentBolNum].Play();
+        if (bols[currentBolNum].isReadyToPlay) {bols[currentBolNum].Play();}
         
         for (int l = 0; l < NUM_BOLS; ++l) {
             if (currentBolNum == l) {
@@ -130,6 +145,22 @@ struct Tala : Module {
             } else {
                 lights[l].setBrightness(0.0);
             }
+        }
+
+    }
+
+
+    void onSampleRateChange(const SampleRateChangeEvent& e) override {
+
+        sampleRate = e.sampleRate;
+
+        //Turn off samples to avoid clicking 
+        for (int l = 0; l < NUM_BOLS; ++l) {
+            bols[l].isPlaying = false;
+        }
+
+        for (int l = 0; l < NUM_BOLS; ++l) {
+            bols[l].reLoad();
         }
 
     }
@@ -174,7 +205,7 @@ struct Tala : Module {
             }
             previousTriggers[n] = currentTrigger;
             if (buttonTrig[n].process(params[n].getValue()) || Trigger) {
-                bols[n].Play();
+                if (bols[n].isReadyToPlay) {bols[n].Play();}
             }
         }
 
@@ -182,7 +213,7 @@ struct Tala : Module {
         sigL = 0;
         sigR = 0;
         for (int n = 0; n < NUM_BOLS; ++n) {
-            if (bols[n].isPlaying) {
+            if (bols[n].isPlaying && bols[n].isReadyToPlay) {
                 if (bols[n].current_sample.currentSample >= bols[n].current_sample.numSamples) {
                     bols[n].isPlaying = false;
                 } else {
@@ -190,7 +221,6 @@ struct Tala : Module {
                     sigL += thisSample.left;
                     sigR += thisSample.right;
                 }
- 
             }
         }
         outputs[AUDIOOUTL_OUTPUT].setVoltage(sigL*gain);
@@ -202,6 +232,8 @@ struct Tala : Module {
 struct TalaWidget : ModuleWidget {
 
     SeasideDigitalDisplay* talaDisplay;
+    SeasideDigitalDisplay* beatDisplay;
+
     //Tala* module_;
 
 	TalaWidget(Tala* module) {
@@ -269,9 +301,19 @@ struct TalaWidget : ModuleWidget {
         addParam(createParamCentered<CKSSThree>(mm2px(Vec(9, 38)), module, Tala::MODESWITCH_PARAM));
 
         talaDisplay = new SeasideDigitalDisplay;    
-        talaDisplay->box.pos = mm2px(Vec(51.5, 73.5));
+        talaDisplay->box.pos = mm2px(Vec(51.5, 76));
         talaDisplay->setText("TEEN TAL");
         addChild(talaDisplay);
+
+        beatDisplay = new SeasideDigitalDisplay(5);    
+        beatDisplay->size = 8;
+        beatDisplay->box.pos = mm2px(Vec(69, 72));
+        // beatDisplay->bgColor = nvgRGB(10,80,50);
+	    // beatDisplay->textColor = nvgRGB(20,255,100);
+	    // beatDisplay->blur1Color = nvgRGBA(100,200,100,200);
+	    // beatDisplay->blur2Color = nvgRGBA(50,200,50,200);
+        beatDisplay->setText("0/0");
+        addChild(beatDisplay);
     }
     
     void step() override {
@@ -279,7 +321,14 @@ struct TalaWidget : ModuleWidget {
 		if(module == NULL) return;
         
         if (module) {
-              talaDisplay->setText(module->thekalib.thekas[module->currentTheka].name);
+            talaDisplay->setText(module->thekalib.thekas[module->currentTheka].name);
+            std::string currStep;
+            if (module->currentStep+1 > module->thekalib.thekas[module->currentTheka].numBeats) {
+                currStep = "x";
+            } else {
+                currStep = std::to_string(module->currentStep+1);
+            }
+            beatDisplay->setText(currStep + "/" + std::to_string(module->thekalib.thekas[module->currentTheka].numBeats));
         }      
 
         Widget::step();

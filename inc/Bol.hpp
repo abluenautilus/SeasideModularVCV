@@ -20,7 +20,7 @@ const std::map<std::string, std::vector<std::string>> fileNames {
     {"Ta", std::vector<std::string>{"Ta01.wav","Ta10.wav"}},
     {"Ti", std::vector<std::string>{"Ti01.wav","Ti06.wav","Ti07.wav","Ti09.wav"}},
     {"Tin", std::vector<std::string>{"Tin01.wav","Tin01a.wav"}},
-    {"Tun", std::vector<std::string>{"Tun01.wav","Tun10.wav"}}
+    {"Tun", std::vector<std::string>{"Tun01.wav","Tun02.wav","Tun03.wav","Tun07.wav"}}
 
 };
 
@@ -53,6 +53,7 @@ public:
     int current_sample_num = 0;
     int mode; // 0 = first sample only, 1 = round robin, 2 = random
     bool isPlaying = false;
+    bool isReadyToPlay = false;
     Sample current_sample;
 
     std::vector<Sample> samples;
@@ -68,11 +69,12 @@ public:
 
         //Load in samples
         loadSamples();
-
+        
     }
 
     int loadSamples() {
-
+        
+        isReadyToPlay = false;
         int success = 1;
 
         std::vector<std::string> filesToLoad = fileNames.at(bolName);
@@ -81,12 +83,22 @@ public:
         for (int i = 0; i < num_sounds; i++) {
 
             std::string filePath = rack::asset::plugin(pluginInstance,"res/bols/" + bolName + "/"+ filesToLoad.at(i));
-
             samples.push_back(Sample(filePath));
 
         }
+        isReadyToPlay = true;
         return success;
 
+
+    }
+
+    void reLoad() {
+        
+        isReadyToPlay = false;
+        for (int i = 0; i < num_sounds; i++) {
+            samples.at(i).load();
+        }
+        isReadyToPlay = true;
     }
 
     void Play() {
