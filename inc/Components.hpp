@@ -19,6 +19,13 @@ struct TSGrayModuleLightWidget : TBase {
 };
 using SSGrayModuleLightWidget = TSGrayModuleLightWidget<>;
 
+template <typename TBase>
+struct FlatMediumLight : TSvgLight<TBase> {
+	FlatMediumLight() {
+		this->setSvg(Svg::load((asset::plugin(pluginInstance,"res/Components/FlatMediumLight.svg"))));
+	}
+};
+
 template <typename TBase = SSGrayModuleLightWidget>
 struct TSBlueLight : TBase {
 	TSBlueLight() {

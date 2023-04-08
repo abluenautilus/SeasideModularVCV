@@ -44,6 +44,7 @@ struct Tala : Module {
         INPUT12,
         CLOCK_INPUT,
         RESET_INPUT,
+        ACC_INPUT,
 		INPUTS_LEN
 	};
 	enum OutputId {
@@ -66,11 +67,13 @@ struct Tala : Module {
         LIGHT12,
         SAM_LED,
         ACC_LED,
+        PLAYING_LED,
 		LIGHTS_LEN
 	};
 
     // Sample rate
     float sampleRate;
+    bool isPlaying = false;
 
 	dsp::SchmittTrigger buttonTrig[12];
     dsp::SchmittTrigger inputTrig[12];
@@ -78,9 +81,10 @@ struct Tala : Module {
     dsp::SchmittTrigger downButtonTrig;
     dsp::SchmittTrigger resetTrig;
     dsp::SchmittTrigger clockTrig;
+    dsp::SchmittTrigger accTrig;
 
     float previousTriggers[12];
-    float prevResetTrig, prevClockTrig;
+    float prevResetTrig, prevClockTrig, prevAccTrig;
 
     Bol bols[NUM_BOLS];
     int mode;
@@ -186,6 +190,12 @@ struct Tala : Module {
 
         mode = params[MODESWITCH_PARAM].getValue();
 
+        if (isPlaying) {
+            lights[PLAYING_LED].setBrightness(0.5);
+        } else {
+            lights[PLAYING_LED].setBrightness(0.0);
+        }
+
         //Check for RESET
         float currentResetTrig =  resetTrig.process(rescale(inputs[RESET_INPUT].getVoltage(),0.1f, 2.0f, 0.f, 1.f));
         if (currentResetTrig && !prevClockTrig) {
@@ -197,16 +207,19 @@ struct Tala : Module {
         float currentClockTrig =  clockTrig.process(rescale(inputs[CLOCK_INPUT].getVoltage(),0.1f, 2.0f, 0.f, 1.f));
 
         if (triggerGapSeconds == 0) {triggerGapSeconds = 0.5;}
-        if ((APP->engine->getFrame() - prevFrame) > (triggerGapSeconds * sampleRate)) {
+        if ((APP->engine->getFrame() - prevFrame) > (triggerGapSeconds * sampleRate) && isPlaying) {
             //Been a while since there was a trigger, we aren't in play mode any more
             //turn off all lights
             for (int l = 0; l < NUM_BOL_BUTTONS; ++l) {
-                    lights[l].setBrightness(0.0);
+                lights[l].setBrightness(0.0);
             }      
             lights[ACC_LED].setBrightness(0.0);
             lights[SAM_LED].setBrightness(0.0);
             accent = 0; 
+            isPlaying = false;
         }
+
+        //Deal with CLOCK TRIG
         if (currentClockTrig && !prevClockTrig) {
             
             //Calculate time since last trigger to adjust gate times
@@ -215,19 +228,11 @@ struct Tala : Module {
 			prevFrame = currentFrame;
 			numRecentTriggers += 1;
 			numTotalTriggers += 1;
-			if (trigToTrigTime > (sampleRate * 5)) {
+			if (trigToTrigTime > (sampleRate * 5) && isPlaying) {
 				//if there has been a really long gap, we reset (how long is too long?)
 				numTotalTriggers = 0;
 				numRecentTriggers = 0;
 				triggerGapAccumulator = 0;
-
-                //turn off all lights
-                for (int l = 0; l < NUM_BOL_BUTTONS; ++l) {
-                        lights[l].setBrightness(0.0);
-                }      
-                lights[ACC_LED].setBrightness(0.0);
-                lights[SAM_LED].setBrightness(0.0);
-                accent = 0;          
 			}
 			if (numTotalTriggers > 2) {
 				triggerGapAccumulator += trigToTrigTime;
@@ -242,6 +247,7 @@ struct Tala : Module {
 				triggerGapAccumulator = 0;
 			}
 
+            isPlaying = true;
             doStep();
 		}
         prevClockTrig = currentClockTrig;
@@ -256,6 +262,7 @@ struct Tala : Module {
             if (currentTheka < 0 ) {currentTheka = NUM_THEKAS-1;}
         }
 
+        //Deal with BUTTONS or BUTTON TRIGGERS
         for (int n = 0; n < NUM_BOL_BUTTONS; ++n) {
 
             bols[n].mode = mode;
@@ -264,12 +271,19 @@ struct Tala : Module {
             float currentTrigger =  inputTrig[n].process(rescale(inputs[n].getVoltage(),0.1f, 2.0f, 0.f, 1.f));
             if (currentTrigger && !previousTriggers[n]) {
                 Trigger = true;
+                //Check for ACCENT
+                if (!isPlaying) {
+                    accent =  accTrig.process(rescale(inputs[ACC_INPUT].getVoltage(),0.1f, 2.0f, 0.f, 1.f));
+                }
+                if (accent) {
+                    lights[ACC_LED].setBrightness(0.5);
+                } else {
+                    lights[ACC_LED].setBrightness(0.0);
+                }
             }
             previousTriggers[n] = currentTrigger;
             if (buttonTrig[n].process(params[n].getValue()) || Trigger) {
-                lights[ACC_LED].setBrightness(0.0);
-                if (n < 12) {lights[n].setBrightness(0.0);}
-                accent = 0;
+                if (n < NUM_BOL_BUTTONS) {lights[n].setBrightness(0.0);}
                 if (bols[n].isReadyToPlay) {bols[n].Play();}
             }
         }
@@ -316,60 +330,62 @@ struct TalaWidget : ModuleWidget {
 		addChild(createWidget<ScrewBlack>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 		addChild(createWidget<ScrewBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
         
-        addChild(createLightCentered<TablaLight<BlueLight>>(mm2px(Vec(18.958, 28)), module, Tala::LIGHT1));
-        addChild(createLightCentered<TablaLight<BlueLight>>(mm2px(Vec(31.59, 28)), module, Tala::LIGHT2));
-        addChild(createLightCentered<TablaLight<BlueLight>>(mm2px(Vec(44.222, 28)), module, Tala::LIGHT3));
-        addChild(createLightCentered<TablaLight<BlueLight>>(mm2px(Vec(56.854, 28)), module, Tala::LIGHT4));
-        addChild(createLightCentered<TablaLight<BlueLight>>(mm2px(Vec(69.486, 28)), module, Tala::LIGHT5));
-        addChild(createLightCentered<TablaLight<BlueLight>>(mm2px(Vec(82.118, 28)), module, Tala::LIGHT6));
-        addChild(createLightCentered<TablaLight<BlueLight>>(mm2px(Vec(19.108, 46)), module, Tala::LIGHT7));
-        addChild(createLightCentered<TablaLight<BlueLight>>(mm2px(Vec(31.74, 46)), module, Tala::LIGHT8));
-        addChild(createLightCentered<TablaLight<BlueLight>>(mm2px(Vec(44.372, 46)), module, Tala::LIGHT9));
-        addChild(createLightCentered<TablaLight<BlueLight>>(mm2px(Vec(57.0045, 46)), module, Tala::LIGHT10));
-        addChild(createLightCentered<TablaLight<BlueLight>>(mm2px(Vec(69.636, 46)), module, Tala::LIGHT11));
-        addChild(createLightCentered<TablaLight<BlueLight>>(mm2px(Vec(82.268, 46)), module, Tala::LIGHT12));
+        addChild(createLightCentered<TablaLight<BlueLight>>(mm2px(Vec(18.958, 31)), module, Tala::LIGHT1));
+        addChild(createLightCentered<TablaLight<BlueLight>>(mm2px(Vec(31.59, 31)), module, Tala::LIGHT2));
+        addChild(createLightCentered<TablaLight<BlueLight>>(mm2px(Vec(44.222, 31)), module, Tala::LIGHT3));
+        addChild(createLightCentered<TablaLight<BlueLight>>(mm2px(Vec(56.854, 31)), module, Tala::LIGHT4));
+        addChild(createLightCentered<TablaLight<BlueLight>>(mm2px(Vec(69.486, 31)), module, Tala::LIGHT5));
+        addChild(createLightCentered<TablaLight<BlueLight>>(mm2px(Vec(82.118, 31)), module, Tala::LIGHT6));
+        addChild(createLightCentered<TablaLight<BlueLight>>(mm2px(Vec(19.108, 49)), module, Tala::LIGHT7));
+        addChild(createLightCentered<TablaLight<BlueLight>>(mm2px(Vec(31.74, 49)), module, Tala::LIGHT8));
+        addChild(createLightCentered<TablaLight<BlueLight>>(mm2px(Vec(44.372, 49)), module, Tala::LIGHT9));
+        addChild(createLightCentered<TablaLight<BlueLight>>(mm2px(Vec(57.0045, 49)), module, Tala::LIGHT10));
+        addChild(createLightCentered<TablaLight<BlueLight>>(mm2px(Vec(69.636, 49)), module, Tala::LIGHT11));
+        addChild(createLightCentered<TablaLight<BlueLight>>(mm2px(Vec(82.268, 49)), module, Tala::LIGHT12));
 
-        addParam(createParamCentered<TablaPad>(mm2px(Vec(18.958, 28)), module, Tala::BUTTON1_PARAM));
-        addParam(createParamCentered<TablaPad>(mm2px(Vec(31.59, 28)), module, Tala::BUTTON2_PARAM));
-        addParam(createParamCentered<TablaPad>(mm2px(Vec(44.222, 28)), module, Tala::BUTTON3_PARAM));
-        addParam(createParamCentered<TablaPad>(mm2px(Vec(56.854, 28)), module, Tala::BUTTON4_PARAM));
-        addParam(createParamCentered<TablaPad>(mm2px(Vec(69.486, 28)), module, Tala::BUTTON5_PARAM));
-        addParam(createParamCentered<TablaPad>(mm2px(Vec(82.118, 28)), module, Tala::BUTTON6_PARAM));
+        addParam(createParamCentered<TablaPad>(mm2px(Vec(18.958, 31)), module, Tala::BUTTON1_PARAM));
+        addParam(createParamCentered<TablaPad>(mm2px(Vec(31.59, 31)), module, Tala::BUTTON2_PARAM));
+        addParam(createParamCentered<TablaPad>(mm2px(Vec(44.222, 31)), module, Tala::BUTTON3_PARAM));
+        addParam(createParamCentered<TablaPad>(mm2px(Vec(56.854, 31)), module, Tala::BUTTON4_PARAM));
+        addParam(createParamCentered<TablaPad>(mm2px(Vec(69.486, 31)), module, Tala::BUTTON5_PARAM));
+        addParam(createParamCentered<TablaPad>(mm2px(Vec(82.118, 31)), module, Tala::BUTTON6_PARAM));
 
-        addParam(createParamCentered<TablaPad>(mm2px(Vec(19.108, 46)), module, Tala::BUTTON7_PARAM));
-        addParam(createParamCentered<TablaPad>(mm2px(Vec(31.74, 46)), module, Tala::BUTTON8_PARAM));
-        addParam(createParamCentered<TablaPad>(mm2px(Vec(44.372, 46)), module, Tala::BUTTON9_PARAM));
-        addParam(createParamCentered<TablaPad>(mm2px(Vec(57.0045, 46)), module, Tala::BUTTON10_PARAM));
-        addParam(createParamCentered<TablaPad>(mm2px(Vec(69.636, 46)), module, Tala::BUTTON11_PARAM));
-        addParam(createParamCentered<TablaPad>(mm2px(Vec(82.268, 46)), module, Tala::BUTTON12_PARAM));
+        addParam(createParamCentered<TablaPad>(mm2px(Vec(19.108, 49)), module, Tala::BUTTON7_PARAM));
+        addParam(createParamCentered<TablaPad>(mm2px(Vec(31.74, 49)), module, Tala::BUTTON8_PARAM));
+        addParam(createParamCentered<TablaPad>(mm2px(Vec(44.372, 49)), module, Tala::BUTTON9_PARAM));
+        addParam(createParamCentered<TablaPad>(mm2px(Vec(57.0045, 49)), module, Tala::BUTTON10_PARAM));
+        addParam(createParamCentered<TablaPad>(mm2px(Vec(69.636, 49)), module, Tala::BUTTON11_PARAM));
+        addParam(createParamCentered<TablaPad>(mm2px(Vec(82.268, 49)), module, Tala::BUTTON12_PARAM));
 
-        addParam(createParamCentered<UpButton>(mm2px(Vec(84.59, 72.68)), module, Tala::BUTTONUP_PARAM));
-        addParam(createParamCentered<DownButton>(mm2px(Vec(84.59, 79.63)), module, Tala::BUTTONDOWN_PARAM));
+        addParam(createParamCentered<UpButton>(mm2px(Vec(84.59, 74)), module, Tala::BUTTONUP_PARAM));
+        addParam(createParamCentered<DownButton>(mm2px(Vec(84.59, 81)), module, Tala::BUTTONDOWN_PARAM));
 
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(18.958, 18)), module, Tala::INPUT1));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(31.59, 18)), module, Tala::INPUT2));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(44.222, 18)), module, Tala::INPUT3));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(56.854, 18)), module, Tala::INPUT4));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(69.486, 18)), module, Tala::INPUT5));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(82.118, 18)), module, Tala::INPUT6));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(18.958, 21)), module, Tala::INPUT1));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(31.59, 21)), module, Tala::INPUT2));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(44.222, 21)), module, Tala::INPUT3));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(56.854, 21)), module, Tala::INPUT4));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(69.486, 21)), module, Tala::INPUT5));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(82.118, 21)), module, Tala::INPUT6));
 
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(19.108, 56)), module, Tala::INPUT7));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(31.74,  56)), module, Tala::INPUT8));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(44.372, 56)), module, Tala::INPUT9));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(57.0045, 56)), module, Tala::INPUT10));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(69.636, 56)), module, Tala::INPUT11));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(82.268, 56)), module, Tala::INPUT12));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(19.108, 59)), module, Tala::INPUT7));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(31.74,  59)), module, Tala::INPUT8));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(44.372, 59)), module, Tala::INPUT9));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(57.0045, 59)), module, Tala::INPUT10));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(69.636, 59)), module, Tala::INPUT11));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(82.268, 59)), module, Tala::INPUT12));
 
         addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13, 97)), module, Tala::RESET_INPUT));
         addInput(createInputCentered<PJ301MPort>(mm2px(Vec(26.7,  97)), module, Tala::CLOCK_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(7,  77.2)), module, Tala::ACC_INPUT));
 
         addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(75.3,  97)), module, Tala::AUDIOOUTL_OUTPUT));
         addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(88.5,  97)), module, Tala::AUDIOOUTR_OUTPUT));
 
-        addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(25.2,72.1)), module, Tala::SAM_LED));
-        addChild(createLightCentered<MediumLight<WhiteLight>>(mm2px(Vec(25.2,77.1)), module, Tala::ACC_LED));
+        addChild(createLightCentered<FlatMediumLight<GreenLight>>(mm2px(Vec(25.5,72.3)), module, Tala::SAM_LED));
+        addChild(createLightCentered<FlatMediumLight<WhiteLight>>(mm2px(Vec(25.5,77.1)), module, Tala::ACC_LED));
+        addChild(createLightCentered<FlatMediumLight<BlueLight>>(mm2px(Vec(25.5,82.2)), module, Tala::PLAYING_LED));
 
-        addParam(createParamCentered<CKSSThree>(mm2px(Vec(9, 38)), module, Tala::MODESWITCH_PARAM));
+        addParam(createParamCentered<CKSSThree>(mm2px(Vec(9, 41)), module, Tala::MODESWITCH_PARAM));
 
         talaDisplay = new SeasideDigitalDisplay;    
         talaDisplay->box.pos = mm2px(Vec(51.5, 76));
