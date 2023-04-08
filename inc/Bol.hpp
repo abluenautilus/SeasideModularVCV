@@ -6,7 +6,7 @@
 #include "plugin.hpp"
 #include "Sample.h"
 
-std::string BOLS[12] = {"Dha","Dhin","Dhit","Dhun","Ga","Ge","Ke","Na","Ta","Ti","Tin","Tun"};
+std::string BOLS[14] = {"Dha","Dhin","Dhit","Dhun","Ga","Ge","Ke","Na","Ta","Ti","Tin","Tun","TiRaKiTa","DhaGe"};
 const std::map<std::string, std::vector<std::string>> fileNames {   
    
     {"Dha", std::vector<std::string>{"Dha01.wav","Dha02.wav"}},
@@ -20,8 +20,9 @@ const std::map<std::string, std::vector<std::string>> fileNames {
     {"Ta", std::vector<std::string>{"Ta01.wav","Ta10.wav"}},
     {"Ti", std::vector<std::string>{"Ti01.wav","Ti06.wav","Ti07.wav","Ti09.wav"}},
     {"Tin", std::vector<std::string>{"Tin01.wav","Tin01a.wav"}},
-    {"Tun", std::vector<std::string>{"Tun01.wav","Tun02.wav","Tun03.wav","Tun07.wav"}}
-
+    {"Tun", std::vector<std::string>{"Tun01.wav","Tun02.wav","Tun03.wav","Tun07.wav"}},
+    {"TiRaKiTa", std::vector<std::string>{"TiRaKiTa01.wav"}},
+    {"DhaGe",std::vector<std::string>{"DhaGe01.wav"}}
 };
 
 const std::map<std::string,int> bolNums {
@@ -36,7 +37,9 @@ const std::map<std::string,int> bolNums {
     {"Ta",8 },
     {"Ti",9 },
     {"Tin",10},
-    {"Tun",11}
+    {"Tun",11},
+    {"TiRaKiTa",12},
+    {"DhaGe",13}
 };
 
 
@@ -66,10 +69,10 @@ public:
 
         //clear vectors
         std::vector<Sample>().swap(samples);
-
+    
         //Load in samples
         loadSamples();
-        
+        INFO("Loaded all samples for this bol");
     }
 
     int loadSamples() {
@@ -88,7 +91,6 @@ public:
         }
         isReadyToPlay = true;
         return success;
-
 
     }
 

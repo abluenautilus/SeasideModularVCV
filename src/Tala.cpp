@@ -6,7 +6,8 @@
 #include "../inc/Bol.hpp"
 #include "../inc/Thekas.hpp"
 
-#define NUM_BOLS 12
+#define NUM_BOLS 14
+#define NUM_BOL_BUTTONS 12
 
 struct Tala : Module {
 
@@ -64,6 +65,7 @@ struct Tala : Module {
         LIGHT11,
         LIGHT12,
         SAM_LED,
+        ACC_LED,
 		LIGHTS_LEN
 	};
 
@@ -80,12 +82,19 @@ struct Tala : Module {
     float previousTriggers[12];
     float prevResetTrig, prevClockTrig;
 
-    Bol bols[12];
+    Bol bols[NUM_BOLS];
     int mode;
-    float gain = 8.0;
+    float gain = 6.0;
 
     int currentTheka = 0; 
     int currentStep = 0;
+    int accent = 0;
+    float accentfactor= 2;
+
+    //bpm estimation
+    float currentFrame,trigToTrigTime,prevFrame,triggerGapAccumulator, triggerGapAverage, triggerGapSeconds;
+    int numRecentTriggers, numTotalTriggers;
+    int numTriggersToAverage = 6;
 
     ThekaLibrary thekalib;
 
@@ -113,11 +122,13 @@ struct Tala : Module {
 
         mode = 0; // 0 = first sample only, 1 = round robin, 2 = random
 
-        for (int i = 0; i < 12; ++i) {
+        for (int i = 0; i < NUM_BOLS; ++i) {
+            INFO("Setting up bol %d",i);
             bols[i] = Bol(BOLS[i]);
+            INFO("Setting mode on bol %d",i);
             bols[i].mode = mode;
         }
-     
+        INFO("Done");
         lights[LIGHT1].setBrightness(1);
     }
 
@@ -129,17 +140,23 @@ struct Tala : Module {
             currentStep = 0;
         }
         if (currentStep == 0) {
-            lights[SAM_LED].setBrightness(1.0); 
+            lights[SAM_LED].setBrightness(0.5); 
         } else {
             lights[SAM_LED].setBrightness(0.0);
+        }
+        if (thekalib.thekas[currentTheka].accents[currentStep] == 1) {
+            lights[ACC_LED].setBrightness(0.5); 
+        } else {
+            lights[ACC_LED].setBrightness(0.0);
         }
  
         //PLAY next BOL
         std::string currentBolName = thekalib.thekas[currentTheka].bols[currentStep];
         int currentBolNum = bolNums.at(currentBolName);
         if (bols[currentBolNum].isReadyToPlay) {bols[currentBolNum].Play();}
+        accent = thekalib.thekas[currentTheka].accents[currentStep];
         
-        for (int l = 0; l < NUM_BOLS; ++l) {
+        for (int l = 0; l < NUM_BOL_BUTTONS; ++l) {
             if (currentBolNum == l) {
                 lights[l].setBrightness(1.0);
             } else {
@@ -172,17 +189,62 @@ struct Tala : Module {
         //Check for RESET
         float currentResetTrig =  resetTrig.process(rescale(inputs[RESET_INPUT].getVoltage(),0.1f, 2.0f, 0.f, 1.f));
         if (currentResetTrig && !prevClockTrig) {
-            //DO RESET
+            currentStep = -1;
         }
         prevResetTrig = currentResetTrig;
 
         //Check for CLOCK
         float currentClockTrig =  clockTrig.process(rescale(inputs[CLOCK_INPUT].getVoltage(),0.1f, 2.0f, 0.f, 1.f));
-        if (currentClockTrig && !prevClockTrig) {
-            doStep();
-        }
-        prevClockTrig = currentClockTrig;
 
+        if (triggerGapSeconds == 0) {triggerGapSeconds = 0.5;}
+        if ((APP->engine->getFrame() - prevFrame) > (triggerGapSeconds * sampleRate)) {
+            //Been a while since there was a trigger, we aren't in play mode any more
+            //turn off all lights
+            for (int l = 0; l < NUM_BOL_BUTTONS; ++l) {
+                    lights[l].setBrightness(0.0);
+            }      
+            lights[ACC_LED].setBrightness(0.0);
+            lights[SAM_LED].setBrightness(0.0);
+            accent = 0; 
+        }
+        if (currentClockTrig && !prevClockTrig) {
+            
+            //Calculate time since last trigger to adjust gate times
+			currentFrame = APP->engine->getFrame();
+			trigToTrigTime = currentFrame - prevFrame;
+			prevFrame = currentFrame;
+			numRecentTriggers += 1;
+			numTotalTriggers += 1;
+			if (trigToTrigTime > (sampleRate * 5)) {
+				//if there has been a really long gap, we reset (how long is too long?)
+				numTotalTriggers = 0;
+				numRecentTriggers = 0;
+				triggerGapAccumulator = 0;
+
+                //turn off all lights
+                for (int l = 0; l < NUM_BOL_BUTTONS; ++l) {
+                        lights[l].setBrightness(0.0);
+                }      
+                lights[ACC_LED].setBrightness(0.0);
+                lights[SAM_LED].setBrightness(0.0);
+                accent = 0;          
+			}
+			if (numTotalTriggers > 2) {
+				triggerGapAccumulator += trigToTrigTime;
+				triggerGapAverage = triggerGapAccumulator/numRecentTriggers;
+				triggerGapSeconds = triggerGapAverage / sampleRate;
+			} else {
+				triggerGapSeconds = 0.125;
+			}
+
+			if (numRecentTriggers > numTriggersToAverage) {
+				numRecentTriggers = 0;
+				triggerGapAccumulator = 0;
+			}
+
+            doStep();
+		}
+        prevClockTrig = currentClockTrig;
 
         if (upButtonTrig.process(params[BUTTONUP_PARAM].getValue())) {
             ++currentTheka;
@@ -194,7 +256,7 @@ struct Tala : Module {
             if (currentTheka < 0 ) {currentTheka = NUM_THEKAS-1;}
         }
 
-        for (int n = 0; n < NUM_BOLS; ++n) {
+        for (int n = 0; n < NUM_BOL_BUTTONS; ++n) {
 
             bols[n].mode = mode;
 
@@ -205,6 +267,9 @@ struct Tala : Module {
             }
             previousTriggers[n] = currentTrigger;
             if (buttonTrig[n].process(params[n].getValue()) || Trigger) {
+                lights[ACC_LED].setBrightness(0.0);
+                if (n < 12) {lights[n].setBrightness(0.0);}
+                accent = 0;
                 if (bols[n].isReadyToPlay) {bols[n].Play();}
             }
         }
@@ -217,9 +282,15 @@ struct Tala : Module {
                 if (bols[n].current_sample.currentSample >= bols[n].current_sample.numSamples) {
                     bols[n].isPlaying = false;
                 } else {
+                    float curraccent;
+                    if (accent) {
+                        curraccent = accentfactor;
+                    } else {
+                        curraccent = 1;
+                    }
                     audioSample thisSample = bols[n].current_sample.getSample();
-                    sigL += thisSample.left;
-                    sigR += thisSample.right;
+                    sigL += (thisSample.left * curraccent);
+                    sigR += (thisSample.right * curraccent);
                 }
             }
         }
@@ -227,7 +298,6 @@ struct Tala : Module {
         outputs[AUDIOOUTR_OUTPUT].setVoltage(sigR*gain);
     }
 };
-
 
 struct TalaWidget : ModuleWidget {
 
@@ -296,7 +366,8 @@ struct TalaWidget : ModuleWidget {
         addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(75.3,  97)), module, Tala::AUDIOOUTL_OUTPUT));
         addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(88.5,  97)), module, Tala::AUDIOOUTR_OUTPUT));
 
-        addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(25,72.1)), module, Tala::SAM_LED));
+        addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(25.2,72.1)), module, Tala::SAM_LED));
+        addChild(createLightCentered<MediumLight<WhiteLight>>(mm2px(Vec(25.2,77.1)), module, Tala::ACC_LED));
 
         addParam(createParamCentered<CKSSThree>(mm2px(Vec(9, 38)), module, Tala::MODESWITCH_PARAM));
 
@@ -308,10 +379,10 @@ struct TalaWidget : ModuleWidget {
         beatDisplay = new SeasideDigitalDisplay(5);    
         beatDisplay->size = 8;
         beatDisplay->box.pos = mm2px(Vec(69, 72));
-        // beatDisplay->bgColor = nvgRGB(10,80,50);
-	    // beatDisplay->textColor = nvgRGB(20,255,100);
-	    // beatDisplay->blur1Color = nvgRGBA(100,200,100,200);
-	    // beatDisplay->blur2Color = nvgRGBA(50,200,50,200);
+        beatDisplay->bgColor = nvgRGB(50,50,50);
+	    beatDisplay->textColor = nvgRGB(255,255,255);
+	    beatDisplay->blur1Color = nvgRGBA(200,200,200,200);
+	    beatDisplay->blur2Color = nvgRGBA(50,50,50,200);
         beatDisplay->setText("0/0");
         addChild(beatDisplay);
     }
@@ -323,12 +394,21 @@ struct TalaWidget : ModuleWidget {
         if (module) {
             talaDisplay->setText(module->thekalib.thekas[module->currentTheka].name);
             std::string currStep;
+            std::string totalSteps;
+
+            totalSteps = std::to_string(module->thekalib.thekas[module->currentTheka].numBeats);
+            if (module->thekalib.thekas[module->currentTheka].numBeats < 10) {
+                totalSteps = "0" + totalSteps;
+            }
             if (module->currentStep+1 > module->thekalib.thekas[module->currentTheka].numBeats) {
-                currStep = "x";
+                currStep = "00";
             } else {
                 currStep = std::to_string(module->currentStep+1);
+                if (module->currentStep < 9) {
+                    currStep = "0" + currStep;
+                }
             }
-            beatDisplay->setText(currStep + "/" + std::to_string(module->thekalib.thekas[module->currentTheka].numBeats));
+            beatDisplay->setText(currStep + "/" + totalSteps);
         }      
 
         Widget::step();

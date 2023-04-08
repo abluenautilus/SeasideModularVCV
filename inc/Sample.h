@@ -65,7 +65,7 @@ public:
             INFO("Resampling");
             interpolate(appSampleRate);
         }
-        
+        INFO("Done loading sample");
         return success;
     }
 
@@ -145,8 +145,6 @@ public:
             samp.right = right_audio_buffer[currentSample];
             currentSample++;
         }
-
-
         return samp;
     }
 
