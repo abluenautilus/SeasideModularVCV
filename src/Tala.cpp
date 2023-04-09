@@ -265,7 +265,6 @@ struct Tala : Module {
         //Deal with BUTTONS or BUTTON TRIGGERS
         for (int n = 0; n < NUM_BOL_BUTTONS; ++n) {
 
-            lights[n].setBrightness(0.0);
             bols[n].mode = mode;
 
             bool Trigger = false;
@@ -284,7 +283,7 @@ struct Tala : Module {
             }
             previousTriggers[n] = currentTrigger;
             if (buttonTrig[n].process(params[n].getValue()) || Trigger) {
-                if (n < NUM_BOL_BUTTONS) {lights[n].setBrightness(1.0);}
+                if (n < NUM_BOL_BUTTONS) {lights[n].setBrightness(0.0);}
                 if (bols[n].isReadyToPlay) {bols[n].Play();}
             } 
         }
