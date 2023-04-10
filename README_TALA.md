@@ -22,4 +22,6 @@ The accent effect can be replicated when not playing a theka by sending a trigge
 
 Notes:
 
-Some thekas include compound bols that are not currently available to play separately (e.g. "TiRaKiTa".) 
+- Some thekas include compound bols that are not currently available to play separately (e.g. "TiRaKiTa".) 
+
+- You can send additional triggers to the bols while a theka is playing. However, the accent input is disabled while the Playing light is on, and accents are controlled only by the stored sequence. 

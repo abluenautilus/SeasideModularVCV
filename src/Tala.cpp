@@ -5,6 +5,7 @@
 #include "../inc/gui.hpp"
 #include "../inc/Bol.hpp"
 #include "../inc/Thekas.hpp"
+#include "../inc/Gate.hpp"
 
 #define NUM_BOLS 14
 #define NUM_BOL_BUTTONS 12
@@ -95,6 +96,9 @@ struct Tala : Module {
     int accent = 0;
     float accentfactor= 2;
 
+    Gate accentGate;
+    bool prevAccent = false;
+
     //bpm estimation
     float currentFrame,trigToTrigTime,prevFrame,triggerGapAccumulator, triggerGapAverage, triggerGapSeconds;
     int numRecentTriggers, numTotalTriggers;
@@ -126,23 +130,28 @@ struct Tala : Module {
 
         mode = 0; // 0 = first sample only, 1 = round robin, 2 = random
 
+        //SET UP bols
         for (int i = 0; i < NUM_BOLS; ++i) {
-            INFO("Setting up bol %d",i);
             bols[i] = Bol(BOLS[i]);
-            INFO("Setting mode on bol %d",i);
             bols[i].mode = mode;
         }
-        INFO("Done");
+
         lights[LIGHT1].setBrightness(1);
+        
+        sampleRate = APP->engine->getSampleRate();
+        accentGate.Init(sampleRate);
+        accentGate.SetDuration(0.125);
     }
 
     void doStep() {
 
-        //ADVANCE currentStep
+        // ADVANCE currentStep
         ++currentStep;
         if (currentStep >= thekalib.thekas[currentTheka].numBeats) {
             currentStep = 0;
         }
+
+        // SET Lights
         if (currentStep == 0) {
             lights[SAM_LED].setBrightness(0.5); 
         } else {
@@ -154,7 +163,7 @@ struct Tala : Module {
             lights[ACC_LED].setBrightness(0.0);
         }
  
-        //PLAY next BOL
+        // PLAY next BOL
         std::string currentBolName = thekalib.thekas[currentTheka].bols[currentStep];
         int currentBolNum = bolNums.at(currentBolName);
         if (bols[currentBolNum].isReadyToPlay) {bols[currentBolNum].Play();}
@@ -175,11 +184,14 @@ struct Tala : Module {
 
         sampleRate = e.sampleRate;
 
-        //Turn off samples to avoid clicking 
+        accentGate.Init(sampleRate);
+
+        // Turn off samples to avoid clicking 
         for (int l = 0; l < NUM_BOLS; ++l) {
             bols[l].isPlaying = false;
         }
 
+        // Reload samples at new sample rate
         for (int l = 0; l < NUM_BOLS; ++l) {
             bols[l].reLoad();
         }
@@ -188,24 +200,27 @@ struct Tala : Module {
 
 	void process(const ProcessArgs& args) override {
 
-        mode = params[MODESWITCH_PARAM].getValue();
-
+        // Set PLAYING light
         if (isPlaying) {
             lights[PLAYING_LED].setBrightness(0.5);
         } else {
             lights[PLAYING_LED].setBrightness(0.0);
         }
 
-        //Check for RESET
+        // Check mode switch
+        mode = params[MODESWITCH_PARAM].getValue();
+
+        // Check for RESET trigger
         float currentResetTrig =  resetTrig.process(rescale(inputs[RESET_INPUT].getVoltage(),0.1f, 2.0f, 0.f, 1.f));
         if (currentResetTrig && !prevClockTrig) {
             currentStep = -1;
         }
         prevResetTrig = currentResetTrig;
 
-        //Check for CLOCK
+        // Check for CLOCK trigger
         float currentClockTrig =  clockTrig.process(rescale(inputs[CLOCK_INPUT].getVoltage(),0.1f, 2.0f, 0.f, 1.f));
 
+        // Decide if we are still in play mode
         if (triggerGapSeconds == 0) {triggerGapSeconds = 0.5;}
         if ((APP->engine->getFrame() - prevFrame) > (triggerGapSeconds * sampleRate) && isPlaying) {
             //Been a while since there was a trigger, we aren't in play mode any more
@@ -252,6 +267,23 @@ struct Tala : Module {
 		}
         prevClockTrig = currentClockTrig;
 
+        //Check for ACCENT trigger
+        float currentAccTrig = accTrig.process(rescale(inputs[ACC_INPUT].getVoltage(),0.1f, 2.0f, 0.f, 1.f));
+        if (currentAccTrig && !prevAccTrig && !isPlaying) {
+            accentGate.ReTrigger();
+            accent = 1;
+        } 
+        accentGate.Process();
+        if (!isPlaying) {
+            accent = accentGate.GetCurrentState();
+        }
+        if (accent) {
+            lights[ACC_LED].setBrightness(0.5);
+        } else {
+            lights[ACC_LED].setBrightness(0.0);
+        }
+
+        // Detect presses of UP and DOWN buttons
         if (upButtonTrig.process(params[BUTTONUP_PARAM].getValue())) {
             ++currentTheka;
             if (currentTheka >= NUM_THEKAS) {currentTheka = 0;}
@@ -262,7 +294,7 @@ struct Tala : Module {
             if (currentTheka < 0 ) {currentTheka = NUM_THEKAS-1;}
         }
 
-        //Deal with BUTTONS or BUTTON TRIGGERS
+        //Deal with bol BUTTONS or bol TRIGGERS
         for (int n = 0; n < NUM_BOL_BUTTONS; ++n) {
 
             bols[n].mode = mode;
@@ -271,15 +303,6 @@ struct Tala : Module {
             float currentTrigger =  inputTrig[n].process(rescale(inputs[n].getVoltage(),0.1f, 2.0f, 0.f, 1.f));
             if (currentTrigger && !previousTriggers[n]) {
                 Trigger = true;
-                //Check for ACCENT
-                if (!isPlaying) {
-                    accent =  accTrig.process(rescale(inputs[ACC_INPUT].getVoltage(),0.1f, 2.0f, 0.f, 1.f));
-                }
-                if (accent) {
-                    lights[ACC_LED].setBrightness(0.5);
-                } else {
-                    lights[ACC_LED].setBrightness(0.0);
-                }
             }
             previousTriggers[n] = currentTrigger;
             if (buttonTrig[n].process(params[n].getValue()) || Trigger) {
