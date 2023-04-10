@@ -72,7 +72,6 @@ public:
     
         //Load in samples
         loadSamples();
-        INFO("Loaded all samples for this bol");
     }
 
     int loadSamples() {
