@@ -17,3 +17,7 @@ The Seaside Modular plugin currently contains 3 modules:
 ***Jawari***, a simulation of the tanpura, the Indian drone instrument. 
 
 [Jawari Manual](README_JAWARI.md)
+
+***Tala***, a tabla machine.
+
+[Tala Manual](README_TALA.md)

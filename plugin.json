@@ -1,7 +1,7 @@
 {
   "slug": "SeasideModular",
   "name": "Seaside Modular",
-  "version": "2.4.2",
+  "version": "2.5b1",
   "license": "MIT",
   "brand": "Seaside Modular",
   "author": "Blue Nautilus",
@@ -33,6 +33,28 @@
       "description": "Proteus expander module, adds functionality to the Proteus sequencer",
       "tags": ["sequencer"],
       "keywords":["sequencer"]
+    },
+    {
+      "slug": "ProteusPlus",
+      "name": "ProteusPlus",
+      "description": "TBD",
+      "tags": ["TBD"],
+      "keywords":["TBD"]
+    },
+    {
+      "slug": "Eclipse",
+      "name": "Eclipse",
+      "description": "No description",
+      "tags": [""],
+      "keywords":[""]
+    },
+    {
+      "slug": "Tala",
+      "name": "Tala",
+      "description": "No description",
+      "tags": [""],
+      "keywords":[""]
     }
+  
   ]
 }

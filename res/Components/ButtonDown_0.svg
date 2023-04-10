@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="6.9000001mm"
+   height="6.3000002mm"
+   viewBox="0 0 6.9000001 6.3000002"
+   version="1.1"
+   id="svg23896"
+   inkscape:version="1.2.1 (9c6d41e4, 2022-07-14)"
+   sodipodi:docname="ButtonDown_0.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview23898"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="5.4263379"
+     inkscape:cx="-5.7128768"
+     inkscape:cy="9.3064606"
+     inkscape:window-width="1028"
+     inkscape:window-height="843"
+     inkscape:window-x="633"
+     inkscape:window-y="109"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs23893" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="display:inline;fill:#c0c0c0;fill-opacity:1;stroke:#000000;stroke-width:0.1;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+       id="rect23860"
+       width="6.7513051"
+       height="6.1556015"
+       x="-6.7887897"
+       y="0.091540724"
+       rx="1"
+       ry="1"
+       transform="scale(-1,1)" />
+    <path
+       sodipodi:type="star"
+       style="fill:#2bb9ff;fill-opacity:1;stroke:#000000;stroke-width:0.1;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+       id="path26267"
+       inkscape:flatsided="true"
+       sodipodi:sides="3"
+       sodipodi:cx="2.5354731"
+       sodipodi:cy="3.3156185"
+       sodipodi:r1="1.6090502"
+       sodipodi:r2="0.80452508"
+       sodipodi:arg1="-1.5707963"
+       sodipodi:arg2="-0.52359878"
+       inkscape:rounded="0"
+       inkscape:randomized="0"
+       d="m 2.5354732,1.7065684 1.3934782,2.4135752 -2.7869566,0 z"
+       transform="rotate(180,2.9743051,3.1693415)"
+       inkscape:transform-center-y="0.40226278" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Layer 2" />
+</svg>

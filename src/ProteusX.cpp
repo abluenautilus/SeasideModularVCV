@@ -2,7 +2,6 @@
 #include "../inc/DaisySP/Source/daisysp.h"
 #include "../inc/Note.hpp"
 #include "../inc/Scales.hpp"
-#include "../inc/formantfilter.hpp"
 #include <random>
 
 #define NUM_SLOTS 5
