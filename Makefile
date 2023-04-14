@@ -6,12 +6,14 @@ DAISYSP_DIR = inc/DaisySP
 FLAGS +=
 # CFLAGS += -O0
 CXXFLAGS += -I$(DAISYSP_DIR)/Source
+CXXFLAGS += -Iinc/libresample/src
 
 # Add .cpp files to the build
 SOURCES += $(wildcard src/*.cpp)
 SOURCES += $(wildcard inc/*.cpp)
 
 SOURCES +=${wildcard inc/DaisySP/Source/**/*.cpp}
+SOURCES +=${wildcard inc/libresample/src/*.c}
 SOURCES +=${wildcard inc/stk/src/*.cpp}
 
 
@@ -22,6 +24,5 @@ DISTRIBUTABLES += $(wildcard LICENSE*)
 DISTRIBUTABLES += $(wildcard presets)
 
 # Include the Rack plugin Makefile framework
-
 include $(RACK_DIR)/plugin.mk
 

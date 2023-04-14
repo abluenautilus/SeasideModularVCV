@@ -74,7 +74,8 @@ struct Tala : Module {
 
     // Sample rate
     float sampleRate;
-    bool isPlaying = false;
+    bool isPlaying , silentMode = false;
+    bool silentModePrev = false;
 
 	dsp::SchmittTrigger buttonTrig[12];
     dsp::SchmittTrigger inputTrig[12];
@@ -96,8 +97,12 @@ struct Tala : Module {
     int accent = 0;
     float accentfactor= 2;
 
-    Gate accentGate;
+    Gate accentGate, silentGate, fadeOutGate, fadeInGate;
+    Gate lightGates[NUM_BOL_BUTTONS];
+
     bool prevAccent = false;
+    bool fadingOut,fadingIn,fadingOutPrev,fadingInPrev;
+    bool waiting, waitingPrev = false;
 
     //bpm estimation
     float currentFrame,trigToTrigTime,prevFrame,triggerGapAccumulator, triggerGapAverage, triggerGapSeconds;
@@ -136,12 +141,36 @@ struct Tala : Module {
             bols[i].mode = mode;
         }
 
-        lights[LIGHT1].setBrightness(1);
-        
         sampleRate = APP->engine->getSampleRate();
+
+        for (int i = 0; i < NUM_BOL_BUTTONS; ++ i) {
+            lightGates[i].Init(sampleRate);
+            lightGates[i].SetDuration(0.25);
+        }
+
         accentGate.Init(sampleRate);
         accentGate.SetDuration(0.125);
+
     }
+
+    json_t *dataToJson() override {
+
+		json_t *root = json_object();
+
+		json_object_set_new(root, "moduleVersion", json_integer(2));
+		json_object_set_new(root, "currentTheka", json_integer(currentTheka));
+
+		return root;
+	}
+
+	void dataFromJson(json_t* root) override {
+
+		json_t *ck = json_object_get(root, "currentTheka");
+		if(ck) {
+			currentTheka = json_integer_value(ck);
+		}
+
+	}	
 
     void doStep() {
 
@@ -162,19 +191,15 @@ struct Tala : Module {
         } else {
             lights[ACC_LED].setBrightness(0.0);
         }
+        
  
         // PLAY next BOL
         std::string currentBolName = thekalib.thekas[currentTheka].bols[currentStep];
         int currentBolNum = bolNums.at(currentBolName);
         if (bols[currentBolNum].isReadyToPlay) {bols[currentBolNum].Play();}
         accent = thekalib.thekas[currentTheka].accents[currentStep];
-        
-        for (int l = 0; l < NUM_BOL_BUTTONS; ++l) {
-            if (currentBolNum == l) {
-                lights[l].setBrightness(1.0);
-            } else {
-                lights[l].setBrightness(0.0);
-            }
+        if (currentBolNum < NUM_BOL_BUTTONS)  {
+             lightGates[currentBolNum].ReTrigger();
         }
 
     }
@@ -182,23 +207,76 @@ struct Tala : Module {
 
     void onSampleRateChange(const SampleRateChangeEvent& e) override {
 
+        // To avoid clicks and pops, we are going to fade out the sound
+        // before resampling, then fade back in. 
+
         sampleRate = e.sampleRate;
 
-        accentGate.Init(sampleRate);
+        float duration = 0.5;
 
-        // Turn off samples to avoid clicking 
+        accentGate.Init(sampleRate);
+        accentGate.SetDuration(0.5);
+
+        silentMode = true;
+
+        fadeOutGate.Init(sampleRate);
+        fadeInGate.Init(sampleRate);
+        fadeOutGate.SetDuration(duration);
+        fadeInGate.SetDuration(duration);
+        fadeOutGate.ReTrigger();
+        silentGate.Init(sampleRate);
+        silentGate.SetDuration(0.5);
+
+        for (int i = 0; i < NUM_BOL_BUTTONS; ++ i) {
+            lightGates[i].Init(sampleRate);
+            lightGates[i].SetDuration(0.25);
+        }
+        
         for (int l = 0; l < NUM_BOLS; ++l) {
             bols[l].isPlaying = false;
         }
 
+    }
+
+    void reloadSamples() {
         // Reload samples at new sample rate
         for (int l = 0; l < NUM_BOLS; ++l) {
             bols[l].reLoad();
         }
-
+        silentGate.ReTrigger();
     }
 
 	void process(const ProcessArgs& args) override {
+
+        // Handle button lights
+        for (int i = 0; i < NUM_BOL_BUTTONS; ++ i) {
+            lightGates[i].Process();
+            lightGates[i].SetDuration(triggerGapSeconds/2);
+            lights[i].setBrightness(lightGates[i].GetCurrentState());
+        }
+
+        // Fading in and fadingout gates are for live sample rate changes
+        fadeInGate.Process();
+        fadeOutGate.Process();
+        silentGate.Process();
+        fadingIn = fadeInGate.GetCurrentState();
+        fadingOut = fadeOutGate.GetCurrentState();
+        waiting = silentGate.GetCurrentState(); 
+        if (!fadingOut && fadingOutPrev) {
+            //done fading out
+            reloadSamples();
+        }
+        if (!waiting && waitingPrev) {
+            //done waiting
+            fadeInGate.ReTrigger();
+        }
+        if (!fadingIn && fadingInPrev) {
+            //done fading in
+            silentMode = false;
+        }
+        fadingOutPrev = fadingOut;
+        fadingInPrev = fadingIn;
+        waitingPrev = waiting;
 
         // Set PLAYING light
         if (isPlaying) {
@@ -311,9 +389,11 @@ struct Tala : Module {
             } 
         }
 
+        // Get sample audio
         float sigL, sigR;
         sigL = 0;
         sigR = 0;
+
         for (int n = 0; n < NUM_BOLS; ++n) {
             if (bols[n].isPlaying && bols[n].isReadyToPlay) {
                 if (bols[n].current_sample.currentSample >= bols[n].current_sample.numSamples) {
@@ -329,10 +409,26 @@ struct Tala : Module {
                     sigL += (thisSample.left * curraccent);
                     sigR += (thisSample.right * curraccent);
                 }
-            }
+            } 
         }
-        outputs[AUDIOOUTL_OUTPUT].setVoltage(sigL*gain);
-        outputs[AUDIOOUTR_OUTPUT].setVoltage(sigR*gain);
+        if (!silentMode) {
+            outputs[AUDIOOUTL_OUTPUT].setVoltage(sigL*gain);
+            outputs[AUDIOOUTR_OUTPUT].setVoltage(sigR*gain);
+        } else {
+            // We're fading in or out
+            float fade;
+            if (fadingIn) {
+                fade = fadeInGate.GetElapsed()/fadeInGate.GetDuration();
+            }
+            if (fadingOut) {
+                fade = fadeOutGate.GetElapsed()/fadeOutGate.GetDuration();
+            }
+            if (!fadingOut && !fadingIn) {
+                fade = 0.98;
+            }
+            outputs[AUDIOOUTL_OUTPUT].setVoltage(sigL*gain*(1-fade));
+            outputs[AUDIOOUTR_OUTPUT].setVoltage(sigR*gain*(1-fade));
+        }
     }
 };
 
