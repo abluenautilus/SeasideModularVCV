@@ -1,4 +1,4 @@
-## Tala Module v2.5 beta
+## Tala Module v2.5 beta 2
 
 Tala is a sample-based tabla machine for VCV Rack. The tabla is a two-piece percussive instrument set used in Indian classical music. Given the tradition of long hours of practice, melodic instrumentalists often use an electronic tabla machine as accompaniment. This module attempts to replicate a tabla machine more than it intends to simulate a live tabla player. 
 
@@ -25,3 +25,5 @@ Notes:
 - Some thekas include compound bols that are not currently available to play separately (e.g. "TiRaKiTa".) 
 
 - You can send additional triggers to the bols while a theka is playing. However, the accent input is disabled while the Playing light is on, and accents are controlled only by the stored sequence. 
+
+-  Tala supports sample rates up to 192kHz. Higher than that you will get silence. Above 92kHz performance is currently somewhat unreliable. Who in the world is running at these sample rates?!
