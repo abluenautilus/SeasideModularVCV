@@ -63,7 +63,7 @@ public:
 
     Bol() {}
 
-    Bol(std::string initname) {
+    Bol(std::string initname, float *buff) {
 
         bolName = initname;
 
@@ -71,10 +71,10 @@ public:
         std::vector<Sample>().swap(samples);
     
         //Load in samples
-        loadSamples();
+        loadSamples(buff);
     }
 
-    int loadSamples() {
+    int loadSamples(float *buff) {
         
         isReadyToPlay = false;
         int success = 1;
@@ -85,7 +85,7 @@ public:
         for (int i = 0; i < num_sounds; i++) {
 
             std::string filePath = rack::asset::plugin(pluginInstance,"res/bols/" + bolName + "/"+ filesToLoad.at(i));
-            samples.push_back(Sample(filePath));
+            samples.push_back(Sample(filePath, buff));
 
         }
         isReadyToPlay = true;

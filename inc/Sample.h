@@ -24,15 +24,12 @@ public:
     int numSamples;
     AudioFile<float> audioFile;
     int currentSample = 0;
-
-    // this has to be big enough to hold upsampled samples
-    // longest sample is 2 seconds
-    // 2 * 60 * 192000 = 2304000
-    float outputBuffer[2304000]; 
+    float* outputBuffer;
 
     Sample(){}
 
-    Sample(std::string filePathInit) {
+    Sample(std::string filePathInit, float *buff) {
+        outputBuffer = buff;
         filePath = filePathInit;
         load();
     }

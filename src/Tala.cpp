@@ -111,6 +111,11 @@ struct Tala : Module {
 
     ThekaLibrary thekalib;
 
+    // this has to be big enough to hold upsampled samples
+    // longest sample is 2 seconds
+    // 2 * 60 * 192000 = 2304000
+    float interpolationBuffer[2304000]; 
+
     Tala() {
 
         config(PARAMS_LEN, INPUTS_LEN, OUTPUTS_LEN, LIGHTS_LEN);
@@ -135,9 +140,9 @@ struct Tala : Module {
 
         mode = 0; // 0 = first sample only, 1 = round robin, 2 = random
 
-        //SET UP bols
+        // //SET UP bols
         for (int i = 0; i < NUM_BOLS; ++i) {
-            bols[i] = Bol(BOLS[i]);
+            bols[i] = Bol(BOLS[i], interpolationBuffer);
             bols[i].mode = mode;
         }
 
@@ -215,7 +220,7 @@ struct Tala : Module {
         float duration = 0.5;
 
         accentGate.Init(sampleRate);
-        accentGate.SetDuration(0.5);
+        accentGate.SetDuration(0.125);
 
         silentMode = true;
 
