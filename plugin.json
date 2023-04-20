@@ -1,7 +1,7 @@
 {
   "slug": "SeasideModular",
   "name": "Seaside Modular",
-  "version": "2.5b2",
+  "version": "2.5.1",
   "license": "MIT",
   "brand": "Seaside Modular",
   "author": "Blue Nautilus",
@@ -31,15 +31,15 @@
       "slug": "ProteusX",
       "name": "ProteusX",
       "description": "Proteus expander module, adds functionality to the Proteus sequencer",
-      "tags": ["sequencer"],
-      "keywords":["sequencer"]
+      "tags": ["Sequencer","Expander"],
+      "keywords":["Sequencer"]
     },
     {
       "slug": "Tala",
       "name": "Tala",
       "description": "No description",
-      "tags": [""],
-      "keywords":[""]
+      "tags": ["Drum","Drums","Percussion"],
+      "keywords":["Tabla"]
     }
   
   ]

@@ -74,8 +74,7 @@ class ResonatorSvf
         float s_out = 0.0f;
         for(int i = 0; i < batch_size; ++i)
         {
-            const float hp
-                = (s_in - r_plus_g[i] * state_1[i] - state_2[i]) * h[i];
+            const float hp = (s_in - r_plus_g[i] * state_1[i] - state_2[i]) * h[i];
             const float bp = g[i] * hp + state_1[i];
             state_1[i]     = g[i] * hp + bp;
             const float lp = g[i] * bp + state_2[i];
