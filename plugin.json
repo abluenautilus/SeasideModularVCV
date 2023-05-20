@@ -40,6 +40,13 @@
       "description": "Tala is a sample-based tabla machine, simulating the Indian drums.",
       "tags": ["Drum","Drums","Percussion"],
       "keywords":["Tabla"]
+    },
+    {
+      "slug": "Raga",
+      "name": "Raga",
+      "description": "Raga is in development",
+      "tags": [""],
+      "keywords":[""]
     }
   
   ]

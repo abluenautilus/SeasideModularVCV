@@ -8,3 +8,4 @@
 /plugin.dll
 .DS_Store
 todo
+plugin-arm64.dylib
