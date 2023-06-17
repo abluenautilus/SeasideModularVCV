@@ -21,3 +21,7 @@ The Seaside Modular plugin currently contains 3 modules:
 ***Tala***, a tabla machine.
 
 [Tala Manual](README_TALA.md)
+
+***Raga***, a sitar synthesizer.
+
+[Raga Manual](README_RAGA.md)
