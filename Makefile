@@ -1,4 +1,4 @@
-CROSS_COMPILE = x86_64-apple-darwin22.4.0
+# CROSS_COMPILE = x86_64-apple-darwin22.4.0
 # include ../../arch.mk
 
 # If RACK_DIR is not defined when calling the Makefile, default to two directories above
@@ -7,7 +7,7 @@ DAISYSP_DIR = inc/DaisySP
 
 # FLAGS will be passed to both the C and C++ compiler
 FLAGS +=
-# CFLAGS += -O0
+CFLAGS += -O0
 CXXFLAGS += -I$(DAISYSP_DIR)/Source
 CXXFLAGS += -Iinc/libresample/src
 
