@@ -1,5 +1,5 @@
 CROSS_COMPILE = x86_64-apple-darwin22.4.0
-include ../../arch.mk
+# include ../../arch.mk
 
 # If RACK_DIR is not defined when calling the Makefile, default to two directories above
 RACK_DIR ?= ../..
@@ -18,7 +18,6 @@ SOURCES += $(wildcard inc/*.cpp)
 SOURCES +=${wildcard inc/DaisySP/Source/**/*.cpp}
 SOURCES +=${wildcard inc/libresample/src/*.c}
 SOURCES +=${wildcard inc/stk/src/*.cpp}
-
 
 # Add files to the ZIP package when running `make dist`
 # The compiled plugin and "plugin.json" are automatically added.
