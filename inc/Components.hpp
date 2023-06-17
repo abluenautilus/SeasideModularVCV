@@ -34,6 +34,22 @@ struct TSBlueLight : TBase {
 };
 using SeasideBlueLight = TSBlueLight<>;
 
+
+
+/** Based on the size of 5mm LEDs */
+template <typename TBase = GrayModuleLightWidget>
+struct TablaLight : TBase {
+	TablaLight() {
+		this->box.size = mm2px(math::Vec(8, 8));
+	}
+};
+
+//-----------------
+//
+// SLIDERS
+//
+//-----------------
+
 // Wide slider, used in Jawari
 template <typename TBase, typename TLightBase = SeasideBlueLight>
 struct SeasideLightSlider : TBase {
@@ -57,20 +73,6 @@ struct SeasideLightSlider : TBase {
 	}
 };
 
-/** Based on the size of 5mm LEDs */
-template <typename TBase = GrayModuleLightWidget>
-struct TablaLight : TBase {
-	TablaLight() {
-		this->box.size = mm2px(math::Vec(8, 8));
-	}
-};
-
-//-----------------
-//
-// SLIDER
-//
-//-----------------
-
 struct BigSlider : app::SvgSlider {
 	BigSlider() {
 		setBackgroundSvg(Svg::load(asset::plugin(pluginInstance, "res/Components/BigSlider.svg")));
@@ -92,6 +94,29 @@ struct BigSliderLight : RectangleLight<TSvgLight<TBase>> {
 template <typename TLightBase = BlueLight>
 struct BigLightSlider : SeasideLightSlider<BigSlider, BigSliderLight<TLightBase>> {
 	BigLightSlider() {}
+};
+
+struct RubberSlider : app::SvgSlider {
+	RubberSlider() {
+		setBackgroundSvg(Svg::load(asset::plugin(pluginInstance, "res/Components/RubberSlider.svg")));
+		setHandleSvg(Svg::load(asset::plugin(pluginInstance, "res/Components/RubberSliderHandleTop.svg")));
+		setHandlePosCentered(
+			math::Vec(8, 56),       //min value (bottom)
+			math::Vec(8, 4)         //max value (top)
+		);
+	}
+};
+
+template <typename TBase>
+struct RubberSliderLight : RectangleLight<TSvgLight<TBase>> {
+	RubberSliderLight() {
+		this->setSvg(Svg::load(asset::plugin(pluginInstance, "res/Components/RubberSliderLight.svg")));
+	}
+};
+
+template <typename TLightBase = BlueLight>
+struct RubberLightSlider : SeasideLightSlider<RubberSlider, RubberSliderLight<TLightBase>> {
+	RubberLightSlider() {}
 };
 
 //-----------------
@@ -156,6 +181,57 @@ struct DownButton : app::SvgSwitch {
 		addFrame(Svg::load(asset::plugin(pluginInstance, "res/Components/ButtonDown_1.svg")));
 	}
 };
+
+//-----------------
+//
+// BUTTONS
+//
+//-----------------v
+
+struct SeasideButton : app::SvgSwitch {
+	SeasideButton() {
+		momentary = true;
+		addFrame(Svg::load(asset::plugin(pluginInstance, "res/Components/SeasideButton_0.svg")));
+		addFrame(Svg::load(asset::plugin(pluginInstance, "res/Components/SeasideButton_1.svg")));
+	}
+};
+using LEDButton = SeasideButton;
+
+struct SeasideLatch : SeasideButton {
+	SeasideLatch() {
+		momentary = false;
+		latch = true;
+	}
+};
+
+/** Looks best with MediumSimpleLight<WhiteLight> or a color of your choice.
+*/
+template <typename TLight>
+struct SeasideLightButton : SeasideButton {
+	app::ModuleLightWidget* light;
+
+	SeasideLightButton() {
+		light = new TLight;
+		// Move center of light to center of box
+		light->box.pos = box.size.div(2).minus(light->box.size.div(2));
+		addChild(light);
+	}
+
+	app::ModuleLightWidget* getLight() {
+		return light;
+	}
+};
+template <typename TLight>
+using LEDLightButton = SeasideLightButton<TLight>;
+
+template <typename TLight>
+struct SeasideLightLatch : SeasideLightButton<TLight> {
+	SeasideLightLatch() {
+		this->momentary = false;
+		this->latch = true;
+	}
+};
+
 
 //-----------------
 //

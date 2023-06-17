@@ -31,6 +31,12 @@ int Gate::GetCurrentSample() {
 
 }
 
+void Gate::SetElapsed(int secs) {
+
+    current_sample_ = secs * sample_rate_;
+
+}
+
 void Gate::ReTrigger() {
 
     current_sample_ = 0;

@@ -96,7 +96,8 @@
         "source_location": "cpp",
         "stop_token": "cpp",
         "filesystem": "cpp",
-        "regex": "cpp"
+        "regex": "cpp",
+        "__verbose_abort": "cpp"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
 
@@ -111,5 +112,7 @@
        "stopAtEntry": true
     }
 ],
-"C_Cpp.errorSquiggles": "enabled"
+"C_Cpp.errorSquiggles": "enabled",
+"cmake.configureOnOpen": true,
+"makefile.makePath": "/usr/bin/make"
  }

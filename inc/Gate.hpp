@@ -23,7 +23,11 @@ class Gate {
 
     float GetElapsed();
 
+    void SetElapsed(int secs);
+
     int GetCurrentSample();
+
+
 
 private:
 

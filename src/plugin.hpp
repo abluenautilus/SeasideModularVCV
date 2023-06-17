@@ -11,3 +11,5 @@ extern Model* modelProteusX;
 extern Model* modelProteus;
 extern Model* modelJawari;
 extern Model* modelTala;
+extern Model* modelRaga;
+extern Model* modelBlank_20HP;

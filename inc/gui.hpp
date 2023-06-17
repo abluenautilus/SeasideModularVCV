@@ -23,3 +23,14 @@ struct IndianNoteKnob : ParamQuantity {
 
 
 };
+
+struct semitoneKnob : ParamQuantity {
+
+    std::string getDisplayValueString() override {
+
+        return semitoneNames.at(getValue());
+
+    }
+
+
+};
