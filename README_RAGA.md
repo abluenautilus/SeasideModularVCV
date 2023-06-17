@@ -8,9 +8,9 @@ A trigger into the STRUM input or a click of the related button will strum the s
 
 The melody is plucked on the *main string*. Control the main string level with the slider and/or the CV in. The sitar main string can be bent to change the pitch or the string can be fretted. This bending technique is called *meend*. Put the "meend" switch to the up position to enable meend mode. In meend mode, any time the pitch is changed without a new STRUM, the pitch will be bent. 
 
-The next string is the *jora*, which is always tuned to the root note (Sa) and provides a drone sound with strummed. 
+The next string is the *jora*, which is always tuned to the root note (Sa) and provides a drone sound when strummed. 
 
-The *second* and *third* strings can be tuned to provide an underlying chord. Sometimes they are both tuned to a perfect fifth (Pa) but may be retuned depending on the raga or piece being played. 
+The *second* and *third* strings can be tuned to provide an underlying chord or to enhance the drone effect. Sometimes they are both tuned to a perfect fifth (Pa) but may be retuned depending on the raga or piece being played. 
 
 The *taraf* strings lie underneath the main strings and are not plucked directly (with one exception) but rather ring sympathetically. When the main string is played at the frequency of one of the tarafs, it will ring out. There are 13 taraf strings. They can be enabled or disabled by clicking on the buttons in the "Sympathetic Tarafs" section. Typically you will enable the tarafs that match the scale you are playing, and leave the others disabled. 
 
@@ -34,7 +34,7 @@ You can directly pluck the tarafs by running your finger across them. This is ty
 
 You can change the root tuning of the sitar by adjusting the Main Sa tuning knob or sending in 1V/OCT signal into the input. This will retune all of the strings on the instrument to match the new root note. 
 
-You can independently re-tunet the second and third strings in a simiar manner. 
+You can independently re-tune the second and third strings in a similar manner. 
 
 ***CPU usage***
 
