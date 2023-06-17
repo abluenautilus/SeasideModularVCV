@@ -4,7 +4,7 @@ Raga is a sitar simulator with 19 synthesized strings.
 
 A trigger into the STRUM input or a click of the related button will strum the strings of the sitar. 
 
-***Sitar stringsx***
+***Sitar strings***
 
 The melody is plucked on the *main string*. Control the main string level with the slider and/or the CV in. The sitar main string can be bent to change the pitch or the string can be fretted. This bending technique is called *meend*. Put the "meend" switch to the up position to enable meend mode. In meend mode, any time the pitch is changed without a new STRUM, the pitch will be bent. 
 
