@@ -1,7 +1,7 @@
 {
   "slug": "SeasideModular",
   "name": "Seaside Modular",
-  "version": "2.5.1",
+  "version": "2.5.2b1",
   "license": "MIT",
   "brand": "Seaside Modular",
   "author": "Blue Nautilus",
@@ -45,6 +45,13 @@
       "slug": "Raga",
       "name": "Raga",
       "description": "Raga is in development",
+      "tags": [""],
+      "keywords":[""]
+    },
+    {
+      "slug": "Blank_20HP",
+      "name": "Blank_20HP",
+      "description": "Seaside Modular Blank Panel",
       "tags": [""],
       "keywords":[""]
     }

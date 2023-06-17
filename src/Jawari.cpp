@@ -332,7 +332,7 @@ struct JawariWidget : ModuleWidget {
 		addChild(createWidget<ScrewBlack>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 		addChild(createWidget<ScrewBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-        addParam(createLightParamCentered<BigLightSlider<SeasideBlueLight>>(mm2px(Vec(25.4, 39.5)), module, Jawari::JAWARI_PARAM,Jawari::JAWARI_LED));
+        addParam(createLightParamCentered<RubberLightSlider<SeasideBlueLight>>(mm2px(Vec(25.4, 39.5)), module, Jawari::JAWARI_PARAM,Jawari::JAWARI_LED));
         
         addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(8.8, 88)), module, Jawari::SEMI_PARAM));
         addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(25.4, 88)), module, Jawari::OCTAVE_PARAM));

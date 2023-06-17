@@ -6,12 +6,12 @@
    id="svg164153"
    x="0px"
    y="0px"
-   width="4.342mm"
-   height="1.5875026mm"
-   viewBox="0 0 16.410708 6.0000099"
+   width="5.4000001mm"
+   height="1mm"
+   viewBox="0 0 10.8 2"
    enable-background="new 0 0 4.3204 11.74218"
    xml:space="preserve"
-   sodipodi:docname="BigSliderLight.svg"
+   sodipodi:docname="RubberSliderLight.svg"
    inkscape:version="1.2.2 (b0a84865, 2022-12-01)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -27,17 +27,17 @@
    fit-margin-top="0"
    id="base"
    inkscape:current-layer="svg164153"
-   inkscape:cx="9.6541662"
-   inkscape:cy="1.979419"
+   inkscape:cx="6.424057"
+   inkscape:cy="6.7011732"
    inkscape:document-units="mm"
    inkscape:pageopacity="0.0"
    inkscape:pageshadow="2"
-   inkscape:window-height="1016"
+   inkscape:window-height="958"
    inkscape:window-maximized="0"
-   inkscape:window-width="1678"
-   inkscape:window-x="1"
-   inkscape:window-y="73"
-   inkscape:zoom="55.571863"
+   inkscape:window-width="1372"
+   inkscape:window-x="433"
+   inkscape:window-y="809"
+   inkscape:zoom="19.847271"
    pagecolor="#ffffff"
    showgrid="false"
    inkscape:pagecheckerboard="0"
@@ -45,6 +45,14 @@
    inkscape:deskcolor="#d1d1d1">
 	</sodipodi:namedview>
 <rect
+   style="display:none;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.0854239;stroke-dasharray:none;stroke-opacity:1"
+   id="rect1034"
+   width="10.701914"
+   height="1.997664"
+   x="0.042711969"
+   y="0.042711969"
+   ry="0.37610143"
+   inkscape:label="led rect" /><rect
    x="0.46793997"
    y="0.43858004"
    opacity="0.4"
@@ -65,23 +73,23 @@
    id="rect5"
    style="display:none" />
 <rect
-   x="15.94478"
-   y="2.0028006e-05"
+   x="10.362779"
+   y="-0.014675472"
    opacity="0.11"
    enable-background="new    "
    width="0.46794"
-   height="5.99999"
+   height="2.0076277"
    id="rect7"
-   style="display:inline" />
+   style="display:inline;stroke-width:0.578451" />
 <rect
-   x="0"
-   y="0"
+   x="0.014905622"
+   y="0.017844664"
    opacity="0.11"
    enable-background="new    "
    width="0.46794"
-   height="5.99999"
+   height="1.9692093"
    id="rect9"
-   style="display:inline" />
+   style="display:inline;stroke-width:0.572889" />
 <linearGradient
    id="SVGID_1_"
    gradientUnits="userSpaceOnUse"
@@ -89,10 +97,10 @@
    y1="1002.4846"
    x2="-983.01074"
    y2="999.99487"
-   gradientTransform="matrix(-1,0,0,1,-980.8506,-998.20348)">
+   gradientTransform="matrix(-0.79373454,0,0,0.69643835,-776.14963,-696.05415)">
 	<stop
    offset="0"
-   style="stop-color:#FDFDFF"
+   style="stop-color:#fdfdff;stop-opacity:1;"
    id="stop11" />
 	<stop
    offset="1"
@@ -103,10 +111,10 @@
    opacity="0.38"
    fill="url(#SVGID_1_)"
    enable-background="new    "
-   cx="2.16013"
-   cy="3.0362601"
-   rx="0.85495001"
-   ry="1.24484"
+   cx="4.0999436"
+   cy="1.2476012"
+   rx="0.67860335"
+   ry="0.86695433"
    id="ellipse16"
-   style="display:none;fill:url(#SVGID_1_)" />
+   style="display:none;fill:url(#SVGID_1_);stroke-width:0.743497" />
 </svg>

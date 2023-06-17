@@ -46,6 +46,21 @@ const std::map<int,std::string> saReGaMa {
     {12,"Ni"}
 };
 
+const std::map<int,std::string> semitoneNames {
+    {1,"C"},
+    {2,"C#"},
+    {3,"D"},
+    {4,"E♭"},
+    {5,"E"},
+    {6,"F"},
+    {7,"F#"},
+    {8,"G"},
+    {9,"G#"},
+    {10,"A"},
+    {11,"B♭"},
+    {12,"B"}
+};
+
 const std::map<std::string, std::vector<int>> scaleTones {   
 
     {"Major", std::vector<int>{1,3,5,6,8,10,12}},

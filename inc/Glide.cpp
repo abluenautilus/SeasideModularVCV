@@ -48,7 +48,6 @@ float Glide::Process() {
             if (val > 1) {val = 1;}
 
             current_state_ = false;
-            INFO("Ending glide with value %.2f final goal of %.2f val is %.2f x is %.2f currentsample %d totalsamples %d", currentvalue_,endfreq_,val,x,current_sample_,total_samples_);
         }
     }
 
