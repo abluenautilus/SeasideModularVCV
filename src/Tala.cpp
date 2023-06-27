@@ -6,6 +6,7 @@
 #include "../inc/Bol.hpp"
 #include "../inc/Thekas.hpp"
 #include "../inc/Gate.hpp"
+#include <random>
 
 #define NUM_BOLS 14
 #define NUM_BOL_BUTTONS 12
@@ -46,6 +47,7 @@ struct Tala : Module {
         CLOCK_INPUT,
         RESET_INPUT,
         ACC_INPUT,
+        THEKA_RAND_INPUT,
 		INPUTS_LEN
 	};
 	enum OutputId {
@@ -84,9 +86,10 @@ struct Tala : Module {
     dsp::SchmittTrigger resetTrig;
     dsp::SchmittTrigger clockTrig;
     dsp::SchmittTrigger accTrig;
+    dsp::SchmittTrigger thekaTrig;
 
     float previousTriggers[12];
-    float prevResetTrig, prevClockTrig, prevAccTrig;
+    float prevResetTrig, prevClockTrig, prevAccTrig, prevThekaTrig;
 
     Bol bols[NUM_BOLS];
     int mode;
@@ -116,6 +119,8 @@ struct Tala : Module {
     // 2 * 60 * 192000 = 2304000
     float interpolationBuffer[2304000]; 
 
+    std::default_random_engine rng;
+
     Tala() {
 
         config(PARAMS_LEN, INPUTS_LEN, OUTPUTS_LEN, LIGHTS_LEN);
@@ -134,6 +139,26 @@ struct Tala : Module {
         configParam(BUTTON12_PARAM, 0.f, 1.f, 0.f,"Tun");
         configParam(BUTTONUP_PARAM, 0.f, 1.f, 0.f,"Prev Theka");
         configParam(BUTTONDOWN_PARAM, 0.f, 1.f, 0.f,"Next Theka");
+
+        configInput(INPUT1,"Dha");
+        configInput(INPUT2,"Dhin");
+        configInput(INPUT3,"Dhit");
+        configInput(INPUT4,"Dhun");
+        configInput(INPUT5,"Ga");
+        configInput(INPUT6,"Ge");
+        configInput(INPUT7,"Ke");
+        configInput(INPUT8,"Na");
+        configInput(INPUT9,"Ta");
+        configInput(INPUT10,"Ti");
+        configInput(INPUT11,"Tin");
+        configInput(INPUT12,"Tun");
+
+        configInput(RESET_INPUT,"Reset");
+        configInput(CLOCK_INPUT,"Clock");
+
+
+        configInput(ACC_INPUT,"Accent");
+        configInput(THEKA_RAND_INPUT,"Choose random theka");
 
         configOutput(AUDIOOUTL_OUTPUT, "Out L");
         configOutput(AUDIOOUTR_OUTPUT, "Out R");
@@ -155,6 +180,9 @@ struct Tala : Module {
 
         accentGate.Init(sampleRate);
         accentGate.SetDuration(0.125);
+
+        rng.seed(std::chrono::system_clock::now().time_since_epoch().count());
+
 
     }
 
@@ -299,6 +327,13 @@ struct Tala : Module {
             currentStep = -1;
         }
         prevResetTrig = currentResetTrig;
+
+        // Check for RANDOM THEKA trigger
+        float currentThekaTrig =  thekaTrig.process(rescale(inputs[THEKA_RAND_INPUT].getVoltage(),0.1f, 2.0f, 0.f, 1.f));
+        if (currentThekaTrig && !prevThekaTrig) {
+            currentTheka = std::rand() % NUM_THEKAS;
+        }
+        prevThekaTrig = currentThekaTrig;
 
         // Check for CLOCK trigger
         float currentClockTrig =  clockTrig.process(rescale(inputs[CLOCK_INPUT].getVoltage(),0.1f, 2.0f, 0.f, 1.f));
@@ -483,6 +518,7 @@ struct TalaWidget : ModuleWidget {
 
         addParam(createParamCentered<UpButton>(mm2px(Vec(84.59, 74)), module, Tala::BUTTONUP_PARAM));
         addParam(createParamCentered<DownButton>(mm2px(Vec(84.59, 81)), module, Tala::BUTTONDOWN_PARAM));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(95,  77.2)), module, Tala::THEKA_RAND_INPUT));
 
         addInput(createInputCentered<PJ301MPort>(mm2px(Vec(18.958, 21)), module, Tala::INPUT1));
         addInput(createInputCentered<PJ301MPort>(mm2px(Vec(31.59, 21)), module, Tala::INPUT2));
